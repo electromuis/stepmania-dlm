@@ -1,8 +1,8 @@
-package com.electromuis.smdl;
+package com.electromuis.smdl.Processing;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.UnzipParameters;
+import com.electromuis.smdl.MainForm;
+import com.electromuis.smdl.Pack;
+import com.electromuis.smdl.Settings;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -68,6 +68,11 @@ public class PackDownloader extends JPanel {
         updateUI();
     }
 
+    public void setPercentage(int val){
+        progressBar.setValue(val);
+        updateUI();
+    }
+
     public void startDownload(){
         Thread downloadThread = new Thread(new Runnable() {
             public void run() {
@@ -96,7 +101,7 @@ public class PackDownloader extends JPanel {
                         } else {
                             // extracts file name from URL
                             fileName = pack.getUrl().substring(pack.getUrl().lastIndexOf("/") + 1,
-                                    pack.getUrl().length());
+                                    pack.getUrl().length()).replace("%20", " ");
                         }
 
                         System.out.println("Content-Type = " + contentType);
@@ -123,7 +128,7 @@ public class PackDownloader extends JPanel {
 
 
                             int progress = (int) ((100*readAmmount)/contentLength);
-                            progressBar.setValue(progress);
+                            setPercentage(progress);
                             updateUI();
                         }
 
@@ -134,20 +139,13 @@ public class PackDownloader extends JPanel {
 
                         setStatus(Status.EXTRACTING);
 
-                        String ext = FilenameUtils.getExtension(saveFilePath);
-                        if(ext.equals("zip")){
-                            ZipFile zip = new ZipFile(saveFilePath);
-                            File targetDir = new File(MainForm.getSettings().getSongsFolder()+File.separator+pack.getName());
-                            if(!targetDir.exists())
-                                targetDir.mkdirs();
+                        String targetDir = MainForm.getSettings().getSongsFolder() + File.separator + pack.getName();
+                        Extractor extractor = new Extractor(saveFilePath, targetDir, PackDownloader.this);
+                        extractor.extract();
+                        setPercentage(100);
 
-                            zip.extractAll(targetDir.getAbsolutePath());
+                        new File(saveFilePath).delete();
 
-                        } else if(ext.equals("rar")){
-
-                        } else {
-                            failed = true;
-                        }
                     } else {
                         failed = true;
                         System.out.println("No file to download. Server replied HTTP code: " + responseCode);
@@ -160,8 +158,7 @@ public class PackDownloader extends JPanel {
                 } catch (IOException e) {
                     failed = true;
                     e.printStackTrace();
-                } catch (ZipException e) {
-                    failed = true;
+                } catch (Extractor.ExtractionException e) {
                     e.printStackTrace();
                 }
 
