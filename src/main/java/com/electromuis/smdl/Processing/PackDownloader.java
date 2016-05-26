@@ -113,26 +113,32 @@ public class PackDownloader extends JPanel {
                         InputStream inputStream = httpConn.getInputStream();
                         String saveFilePath = MainForm.getSettings().getSongsFolder() + File.separator + fileName;
 
-                        // opens an output stream to save into file
-                        FileOutputStream outputStream = new FileOutputStream(saveFilePath);
+                        File saveFile = new File(saveFilePath);
+                        if(!(saveFile.exists() && (saveFile.length()==contentLength))){
+                            // opens an output stream to save into file
+                            FileOutputStream outputStream = new FileOutputStream(saveFilePath);
 
-                        int bytesRead = -1;
-                        long readAmmount = 0;
-                        byte[] buffer = new byte[BUFFER_SIZE];
+                            int bytesRead = -1;
+                            long readAmmount = 0;
+                            byte[] buffer = new byte[BUFFER_SIZE];
 
-                        setStatus(Status.DOWNLOADING);
+                            setStatus(Status.DOWNLOADING);
 
-                        while ((bytesRead = inputStream.read(buffer)) != -1) {
-                            readAmmount += bytesRead;
-                            outputStream.write(buffer, 0, bytesRead);
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                readAmmount += bytesRead;
+                                outputStream.write(buffer, 0, bytesRead);
 
 
-                            int progress = (int) ((100*readAmmount)/contentLength);
-                            setPercentage(progress);
-                            updateUI();
+                                int progress = (int) ((100*readAmmount)/contentLength);
+                                setPercentage(progress);
+                                updateUI();
+                            }
+                            outputStream.close();
                         }
 
-                        outputStream.close();
+
+
+
                         inputStream.close();
 
                         System.out.println("File downloaded");
@@ -160,6 +166,7 @@ public class PackDownloader extends JPanel {
                     e.printStackTrace();
                 } catch (Extractor.ExtractionException e) {
                     e.printStackTrace();
+                    JOptionPane.showMessageDialog(PackDownloader.this, "There was an error extracting the pack: "+e.getMessage(), "Archive error", JOptionPane.ERROR_MESSAGE);
                 }
 
 

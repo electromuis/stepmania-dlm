@@ -6,7 +6,9 @@ import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -172,6 +174,8 @@ public class Extractor {
         List<Integer> idList = new ArrayList<Integer>();
         int numberOfItems = inArchive.getNumberOfItems();
 
+        boolean multiRoot = false;
+
         String lastFolder = null;
         for (int i = 0; i < numberOfItems; i++) {
             String path = (String) inArchive.getProperty(i, PropID.PATH);
@@ -182,11 +186,44 @@ public class Extractor {
                 lastFolder = found;
             else if(found.equals(lastFolder));
             else {
-                throw new ExtractionException("Multiple roots found");
+                multiRoot = true;
+                break;
             }
         }
 
-        return lastFolder;
+        if(multiRoot){
+            //determine largest root folder
+            Map<String, Long> rootSizes = new HashMap<String, Long>();
+            for (int i = 0; i < numberOfItems; i++) {
+                if(!(Boolean) inArchive.getProperty(i, PropID.IS_FOLDER)){
+                    String path = (String) inArchive.getProperty(i, PropID.PATH);
+                    String found[] = path.split(Pattern.quote(File.separator), 2);
+                    if(found.length>1){
+                        String foundRoot = found[0];
+                        long size = (Long) inArchive.getProperty(i, PropID.SIZE);
+                        if(!rootSizes.containsKey(foundRoot))
+                            rootSizes.put(foundRoot, size);
+                        else
+                            rootSizes.put(foundRoot, size+rootSizes.get(foundRoot));
+                    }
+                }
+            }
+
+            Map.Entry<String, Long> maxEntry = null;
+
+            for (Map.Entry<String, Long> entry : rootSizes.entrySet())
+            {
+                if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
+                {
+                    maxEntry = entry;
+                }
+            }
+
+            return maxEntry.getKey();
+
+        } else {
+            return lastFolder;
+        }
     }
 
     private void prepareOutputDirectory() throws ExtractionException {

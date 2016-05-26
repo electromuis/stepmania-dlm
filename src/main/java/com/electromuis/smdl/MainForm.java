@@ -2,10 +2,12 @@ package com.electromuis.smdl;
 
 import com.electromuis.smdl.Processing.PackDownloader;
 import com.electromuis.smdl.provider.PackProvider;
+import com.electromuis.smdl.provider.ProviderLoading;
 import com.electromuis.smdl.provider.StepmaniaOnline;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -24,25 +26,19 @@ public class MainForm {
     private JScrollPane downloadPane;
     private JScrollPane songsPane;
     private JPanel downloadPanel;
+    private JButton resetButton;
     private PacksModel packsModel;
     private static Settings settings;
     private List<PackDownloader> packDownloaders;
     private Map<String, Pack> packs;
+    private ProviderLoading providerLoading;
 
     public MainForm() {
         fetchPacks.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                try {
-                    packs = getPacks();
-                    updateExistingPacks();
-                    packsModel.setPacks(getPacksArray());
-                    packsTable.updateUI();
-
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                providerLoading.updatePacks();
             }
         });
         applyPacksButton.addMouseListener(new MouseAdapter() {
@@ -60,6 +56,16 @@ public class MainForm {
                 for(PackDownloader pd : packDownloaders){
                     pd.startDownload();
                 }
+
+                
+            }
+        });
+
+        resetButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                updateExistingPacks();
             }
         });
 
@@ -71,8 +77,24 @@ public class MainForm {
         packsTable.setModel(packsModel);
         packDownloaders = new ArrayList<PackDownloader>();
 
+        providerLoading = new ProviderLoading(this);
+        providerLoading.pack();
+    }
 
+    public void setPacks(Map<String, Pack> packs){
+        this.packs = packs;
 
+        updateExistingPacks();
+    }
+
+    private void updateExistingPacks(){
+        for (Map.Entry<String, Pack> entry : packs.entrySet()) {
+            Pack pack = entry.getValue();
+            pack.setDownload(pack.getExists());
+        }
+
+        packsModel.setPacks(getPacksArray());
+        packsTable.updateUI();
     }
 
     private void addDownloader(PackDownloader pd){
@@ -105,13 +127,6 @@ public class MainForm {
         return packArray;
     }
 
-    private void updateExistingPacks(){
-        for (Map.Entry<String, Pack> entry : packs.entrySet()) {
-            Pack pack = entry.getValue();
-            pack.setDownload(pack.getExists());
-        }
-    }
-
     public static Settings getSettings(){
         return settings;
     }
@@ -131,26 +146,8 @@ public class MainForm {
         }
     }
 
-    private Map<String, Pack> getPacks() throws IOException {
-        PackProvider providers[] = {
-                //new MockProvider(),
-                new StepmaniaOnline()
-        };
-
-        Map<String, Pack> packsList = new HashMap<String, Pack>();
-
-        for(PackProvider pv : providers)
-            for(Pack p : pv.getPacks())
-                if(!packsList.containsKey(p.getName())) {
-                    packsList.put(p.getName(), p);
-                }
-
-
-        return packsList;
-    }
-
     public void run() {
-        JFrame frame = new JFrame("MainForm");
+        JFrame frame = new JFrame("Stepmania DLM");
         frame.setContentPane(new MainForm().panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

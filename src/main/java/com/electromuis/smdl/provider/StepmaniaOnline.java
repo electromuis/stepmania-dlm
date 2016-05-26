@@ -24,8 +24,8 @@ public class StepmaniaOnline implements PackProvider {
 
         for (Element e : packs){
             Elements info = e.select("td");
-            if(info.size() > 2)
-                packsList.add(new com.electromuis.smdl.Pack(info.get(0).text(),
+            if(info.size() > 2 && !info.get(0).text().trim().equals(""))
+                packsList.add(new Pack(info.get(0).text(),
                         info.get(1).text(),
                         info.get(2).text(),
                         "http://stepmaniaonline.net"+info.get(0).select("a").attr("href").replace(" ", "%20")
@@ -33,5 +33,9 @@ public class StepmaniaOnline implements PackProvider {
         }
 
         return packsList;
+    }
+
+    public boolean downloadPack(Pack p) {
+        return false;
     }
 }
