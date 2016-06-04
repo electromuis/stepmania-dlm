@@ -1,6 +1,7 @@
 package com.electromuis.smdl.provider;
 
 import com.electromuis.smdl.Pack;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -20,7 +21,7 @@ public class RicoFtpProvider implements PackProvider {
         FTPClient ftp = new FTPClient();
         try {
             int reply;
-            String server = "ftp.example.com";
+            String server = "gamebreakersnl.synology.me";
             ftp.connect(server);
 
             reply = ftp.getReplyCode();
@@ -28,19 +29,26 @@ public class RicoFtpProvider implements PackProvider {
             if(!FTPReply.isPositiveCompletion(reply)) {
                 ftp.disconnect();
                 System.err.println("FTP server refused connection.");
-            }
+            } else {
+                ftp.login("public", "ddr1352");
 
-            String root = "smpacks";
+                String root = "DDR Download Folder"+File.separator+"DLM";
 
-            for (FTPFile group : ftp.listDirectories(root))
-            {
-                if(group.isDirectory()){
-                    String groupFolder = root+File.separator+group.getName();
-                    for (FTPFile file : ftp.listFiles(groupFolder)){
-                        packs.add(new Pack(file.getName(), (file.getSize()/1000000)+"MB", group.getName(), groupFolder+File.separator+file.getName()));
+                for (FTPFile group : ftp.listDirectories(root))
+                {
+                    System.out.println(group.getName());
+                    if(group.isDirectory()){
+                        String groupFolder = root+File.separator+group.getName();
+                        for (FTPFile file : ftp.listFiles(groupFolder)){
+                            String name = FilenameUtils.getBaseName(file.getName());
+                            packs.add(new FtpPack(name, (file.getSize()/1000000)+"MB", group.getName(), groupFolder+File.separator+file.getName(), file.getSize()));
+
+                        }
                     }
                 }
             }
+
+
 
 
             ftp.logout();
@@ -55,4 +63,6 @@ public class RicoFtpProvider implements PackProvider {
 
         return packs;
     }
+
+
 }

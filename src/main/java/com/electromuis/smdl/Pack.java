@@ -1,6 +1,10 @@
 package com.electromuis.smdl;
 
+import com.electromuis.smdl.Processing.PackDownloader;
+
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 /**
  * Created by electromuis on 12.05.16.
@@ -20,6 +24,8 @@ public class Pack {
         this.type = type;
         this.url = url;
     }
+
+    public String download(PackDownloader downloader) throws IOException {return null;}
 
     public String getName() {
         return name;
@@ -78,6 +84,6 @@ public class Pack {
     }
 
     public boolean getExists(){
-        return (new File(MainForm.getSettings().getSongsFolder()+'/'+name).exists());
+        return (new File(MainForm.getSettings().getSongsFolder()+File.separator+name).exists());
     }
 }

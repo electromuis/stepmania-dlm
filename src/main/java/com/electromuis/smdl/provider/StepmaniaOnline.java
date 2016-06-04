@@ -25,7 +25,7 @@ public class StepmaniaOnline implements PackProvider {
         for (Element e : packs){
             Elements info = e.select("td");
             if(info.size() > 2 && !info.get(0).text().trim().equals(""))
-                packsList.add(new Pack(info.get(0).text(),
+                packsList.add(new HttpPack(info.get(0).text(),
                         info.get(1).text(),
                         info.get(2).text(),
                         "http://stepmaniaonline.net"+info.get(0).select("a").attr("href").replace(" ", "%20")

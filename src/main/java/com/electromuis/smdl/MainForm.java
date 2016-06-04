@@ -7,9 +7,7 @@ import com.electromuis.smdl.provider.StepmaniaOnline;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -29,9 +27,10 @@ public class MainForm {
     private JButton resetButton;
     private PacksModel packsModel;
     private static Settings settings;
-    private List<PackDownloader> packDownloaders;
+    //private List<PackDownloader> packDownloaders;
     private Map<String, Pack> packs;
     private ProviderLoading providerLoading;
+    private boolean downloading = false;
 
     public MainForm() {
         fetchPacks.addMouseListener(new MouseAdapter() {
@@ -44,20 +43,38 @@ public class MainForm {
         applyPacksButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                cleanDownloaders();
+            super.mouseClicked(e);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    cleanDownloaders();
 
-                for(Pack p : packsModel.getPacks()){
-                    if(p.isDownload() && !p.getExists()){
-                        addDownloader(new PackDownloader(p));
+                    boolean added = false;
+
+                    for(Pack p : packsModel.getPacks()){
+                        if(p.isDownload() && !p.getExists()){
+                            addDownloader(p);
+                             added = true;
+                        }
+                    }
+
+                    if(added){
+                        int n = JOptionPane.showConfirmDialog(
+                                MainForm.this.panel1,
+                                "Do you want to apply the current changes?",
+                                "Apply packs",
+                                JOptionPane.YES_NO_OPTION);
+
+                        if(n == JOptionPane.YES_OPTION) {
+                            for (Component pd : downloadPanel.getComponents()) {
+                                if(pd instanceof PackDownloader) {
+                                    setDownloading(true);
+                                    ((PackDownloader) pd).startDownload(MainForm.this);
+                                }
+                            }
+                        }
                     }
                 }
-
-                for(PackDownloader pd : packDownloaders){
-                    pd.startDownload();
-                }
-
-                
+            });
             }
         });
 
@@ -75,10 +92,32 @@ public class MainForm {
         initSettings();
 
         packsTable.setModel(packsModel);
-        packDownloaders = new ArrayList<PackDownloader>();
 
         providerLoading = new ProviderLoading(this);
         providerLoading.pack();
+    }
+
+    public void setDownloading(boolean b){
+        for (Component pd : downloadPanel.getComponents()) {
+            if(pd instanceof PackDownloader) {
+                switch (((PackDownloader) pd).getStatus()){
+                    case DONE:
+                    case PENDING:
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
+
+        downloading = b;
+        applyPacksButton.setEnabled(!b);
+        applyPacksButton.setText(b?
+        "Downloading ...":
+        "Apply packs");
+
+        resetButton.setEnabled(!b);
+        fetchPacks.setEnabled(!b);
     }
 
     public void setPacks(Map<String, Pack> packs){
@@ -97,22 +136,32 @@ public class MainForm {
         packsTable.updateUI();
     }
 
-    private void addDownloader(PackDownloader pd){
-        packDownloaders.add(pd);
-        downloadPanel.add(pd);
-        downloadPanel.updateUI();
-    }
-
-    private void cleanDownloaders(){
-        for(PackDownloader pd : packDownloaders){
-            if(pd.getStatus() == PackDownloader.Status.DONE){
-                packDownloaders.remove(pd);
+    private void addDownloader(Pack p){
+        boolean exists = false;
+        for (Component pd : downloadPanel.getComponents()) {
+            if(pd instanceof PackDownloader) {
+                Pack pdl = ((PackDownloader) pd).getPack();
+                if(pdl.equals(p)){
+                    exists = true;
+                    break;
+                }
             }
         }
 
-        downloadPanel.removeAll();
-        for(PackDownloader pd : packDownloaders)
-            downloadPanel.add(pd);
+        if(!exists) {
+            downloadPanel.add(new PackDownloader(p));
+            downloadPanel.updateUI();
+        }
+    }
+
+    private void cleanDownloaders(){
+        for (Component p : downloadPanel.getComponents()) {
+            PackDownloader pd = (PackDownloader)p;
+            if(pd.getStatus() == PackDownloader.Status.DONE){
+                downloadPanel.remove(p);
+            }
+        }
+        downloadPanel.updateUI();
     }
 
     private Pack[] getPacksArray(){
@@ -150,6 +199,12 @@ public class MainForm {
         JFrame frame = new JFrame("Stepmania DLM");
         frame.setContentPane(new MainForm().panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                super.windowClosed(e);
+            }
+        });
         frame.pack();
         frame.setVisible(true);
     }

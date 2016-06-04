@@ -3,6 +3,8 @@ package com.electromuis.smdl.Processing;
 import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
 import com.electromuis.smdl.Settings;
+import com.electromuis.smdl.provider.FtpPack;
+import com.electromuis.smdl.provider.HttpPack;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -25,10 +27,11 @@ public class PackDownloader extends JPanel {
     private JLabel statusLabel;
     private Settings settings;
     private Status status;
-    private static final int BUFFER_SIZE = 4096;
     boolean failed = false;
 
     public Status getStatus(){return status;}
+
+    public Pack getPack(){return pack;}
     
     public enum Status {
         PENDING("Pending"),
@@ -62,7 +65,7 @@ public class PackDownloader extends JPanel {
         setStatus(Status.PENDING);
     }
 
-    private void setStatus(Status s){
+    public void setStatus(Status s){
         status = s;
         statusLabel.setText(s.status);
         updateUI();
@@ -73,104 +76,40 @@ public class PackDownloader extends JPanel {
         updateUI();
     }
 
-    public void startDownload(){
+    public void startDownload(final MainForm mainForm){
         Thread downloadThread = new Thread(new Runnable() {
             public void run() {
                 progressBar.setValue(0);
                 setStatus(Status.STARTED);
 
+
                 try {
-                    URL url = new URL(pack.getUrl());
-                    HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
-                    int responseCode = httpConn.getResponseCode();
-
-                    // always check HTTP response code first
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        String fileName = "";
-                        String disposition = httpConn.getHeaderField("Content-Disposition");
-                        String contentType = httpConn.getContentType();
-                        int contentLength = httpConn.getContentLength();
-
-                        if (disposition != null) {
-                            // extracts file name from header field
-                            int index = disposition.indexOf("filename=");
-                            if (index > 0) {
-                                fileName = disposition.substring(index + 10,
-                                        disposition.length() - 1);
-                            }
-                        } else {
-                            // extracts file name from URL
-                            fileName = pack.getUrl().substring(pack.getUrl().lastIndexOf("/") + 1,
-                                    pack.getUrl().length()).replace("%20", " ");
-                        }
-
-                        System.out.println("Content-Type = " + contentType);
-                        System.out.println("Content-Disposition = " + disposition);
-                        System.out.println("Content-Length = " + contentLength);
-                        System.out.println("fileName = " + fileName);
-
-                        // opens input stream from the HTTP connection
-                        InputStream inputStream = httpConn.getInputStream();
-                        String saveFilePath = MainForm.getSettings().getSongsFolder() + File.separator + fileName;
-
-                        File saveFile = new File(saveFilePath);
-                        if(!(saveFile.exists() && (saveFile.length()==contentLength))){
-                            // opens an output stream to save into file
-                            FileOutputStream outputStream = new FileOutputStream(saveFilePath);
-
-                            int bytesRead = -1;
-                            long readAmmount = 0;
-                            byte[] buffer = new byte[BUFFER_SIZE];
-
-                            setStatus(Status.DOWNLOADING);
-
-                            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                                readAmmount += bytesRead;
-                                outputStream.write(buffer, 0, bytesRead);
-
-
-                                int progress = (int) ((100*readAmmount)/contentLength);
-                                setPercentage(progress);
-                                updateUI();
-                            }
-                            outputStream.close();
-                        }
-
-
-
-
-                        inputStream.close();
-
-                        System.out.println("File downloaded");
-
+                    String archive = pack.download(PackDownloader.this);
+                    if (archive != null) {
                         setStatus(Status.EXTRACTING);
 
                         String targetDir = MainForm.getSettings().getSongsFolder() + File.separator + pack.getName();
-                        Extractor extractor = new Extractor(saveFilePath, targetDir, PackDownloader.this);
+                        Extractor extractor = new Extractor(archive, targetDir, PackDownloader.this);
                         extractor.extract();
                         setPercentage(100);
 
-                        new File(saveFilePath).delete();
+                        new File(archive).delete();
 
+                        setStatus(Status.DONE);
+                        mainForm.setDownloading(false);
                     } else {
-                        failed = true;
-                        System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+                        System.out.println("Download failed");
+                        JOptionPane.showMessageDialog(PackDownloader.this, "There was an error downloading the pack", "Archive error", JOptionPane.ERROR_MESSAGE);
                     }
-                    httpConn.disconnect();
-
-                } catch (MalformedURLException e) {
-                    failed = true;
+                } catch (Extractor.ExtractionException e) {
+                    JOptionPane.showMessageDialog(PackDownloader.this, "There was an error extracting the pack", "Archive error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 } catch (IOException e) {
-                    failed = true;
                     e.printStackTrace();
-                } catch (Extractor.ExtractionException e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(PackDownloader.this, "There was an error extracting the pack: "+e.getMessage(), "Archive error", JOptionPane.ERROR_MESSAGE);
                 }
 
 
-                setStatus(Status.DONE);
+
 
             }
         });
