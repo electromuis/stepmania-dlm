@@ -36,7 +36,6 @@ public class RicoFtpProvider implements PackProvider {
 
                 for (FTPFile group : ftp.listDirectories(root))
                 {
-                    System.out.println(group.getName());
                     if(group.isDirectory()){
                         String groupFolder = root+File.separator+group.getName();
                         for (FTPFile file : ftp.listFiles(groupFolder)){

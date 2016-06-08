@@ -3,6 +3,7 @@ package com.electromuis.smdl;
 import com.electromuis.smdl.Processing.PackDownloader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -84,6 +85,27 @@ public class Pack {
     }
 
     public boolean getExists(){
-        return (new File(MainForm.getSettings().getSongsFolder()+File.separator+name).exists());
+        return getFolder().exists();
+    }
+
+    private File getFolder(){
+        return (new File(MainForm.getSettings().getSongsFolder()+File.separator+name));
+    }
+
+    public void deletePack(){
+        try {
+            delete(getFolder());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void delete(File f) throws FileNotFoundException {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                delete(c);
+        }
+        if (!f.delete())
+            throw new FileNotFoundException("Failed to delete file: " + f);
     }
 }

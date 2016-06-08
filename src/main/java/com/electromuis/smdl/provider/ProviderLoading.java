@@ -21,7 +21,6 @@ public class ProviderLoading extends JDialog {
     public ProviderLoading(MainForm mainForm) {
 
         setContentPane(contentPane);
-        //setModal(true);
         this.mainForm = mainForm;
     }
 
@@ -31,16 +30,17 @@ public class ProviderLoading extends JDialog {
         new Thread(new Runnable() {
             public void run() {
                 setVisible(true);
-                Map<String, Pack> packs = getPacks();
-                mainForm.setPacks(packs);
+                getPacks();
+                mainForm.updateExistingPacks();
+
                 setVisible(false);
             }
         }).start();
 
     }
 
-    private Map<String, Pack> getPacks() {
-        Map<String, Pack> packsList = new HashMap<String, Pack>();
+    private void getPacks() {
+        Map<String, Pack> packsList = MainForm.packs;
 
         for(PackProvider pv : providers)
             try {
@@ -53,7 +53,5 @@ public class ProviderLoading extends JDialog {
                 e.printStackTrace();
             }
 
-
-        return packsList;
     }
 }

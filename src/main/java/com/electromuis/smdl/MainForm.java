@@ -1,17 +1,18 @@
 package com.electromuis.smdl;
 
 import com.electromuis.smdl.Processing.PackDownloader;
-import com.electromuis.smdl.provider.PackProvider;
 import com.electromuis.smdl.provider.ProviderLoading;
-import com.electromuis.smdl.provider.StepmaniaOnline;
+import com.sun.deploy.util.ArrayUtil;
+import org.apache.commons.io.FilenameUtils;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import javax.swing.*;
+import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by electromuis on 12.05.16.
@@ -19,27 +20,22 @@ import java.util.List;
 public class MainForm {
     private JTable packsTable;
     private JPanel panel1;
-    private JButton fetchPacks;
     private JButton applyPacksButton;
     private JScrollPane downloadPane;
     private JScrollPane songsPane;
     private JPanel downloadPanel;
     private JButton resetButton;
+    private JPanel panel2;
+    private JButton clearButton;
+    private JMenuItem updateMenuItem;
     private PacksModel packsModel;
     private static Settings settings;
-    //private List<PackDownloader> packDownloaders;
-    private Map<String, Pack> packs;
+    public static Map<String, Pack> packs = new HashMap<String, Pack>();
     private ProviderLoading providerLoading;
-    private boolean downloading = false;
+    private boolean working = false;
+    private JFrame mainFrame;
 
     public MainForm() {
-        fetchPacks.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                providerLoading.updatePacks();
-            }
-        });
         applyPacksButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -52,8 +48,11 @@ public class MainForm {
 
                     for(Pack p : packsModel.getPacks()){
                         if(p.isDownload() && !p.getExists()){
-                            addDownloader(p);
+                            addDownloader(p, PackDownloader.Command.DOWNLOAD);
                              added = true;
+                        } else if(!p.isDownload() && p.getExists()){
+                            addDownloader(p, PackDownloader.Command.DELETE);
+                            added = true;
                         }
                     }
 
@@ -67,14 +66,24 @@ public class MainForm {
                         if(n == JOptionPane.YES_OPTION) {
                             for (Component pd : downloadPanel.getComponents()) {
                                 if(pd instanceof PackDownloader) {
-                                    setDownloading(true);
-                                    ((PackDownloader) pd).startDownload(MainForm.this);
+                                    setWorking(true);
+                                    ((PackDownloader) pd).start(MainForm.this);
                                 }
                             }
                         }
                     }
                 }
             });
+            }
+        });
+
+        clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                for (Map.Entry<String, Pack> entry : packs.entrySet()) {
+                    Pack pack = entry.getValue();
+                    pack.setDownload(false);
+                }
+                packsTable.updateUI();
             }
         });
 
@@ -97,7 +106,7 @@ public class MainForm {
         providerLoading.pack();
     }
 
-    public void setDownloading(boolean b){
+    public void setWorking(boolean b){
         for (Component pd : downloadPanel.getComponents()) {
             if(pd instanceof PackDownloader) {
                 switch (((PackDownloader) pd).getStatus()){
@@ -110,14 +119,15 @@ public class MainForm {
             }
         }
 
-        downloading = b;
+        working = b;
         applyPacksButton.setEnabled(!b);
         applyPacksButton.setText(b?
-        "Downloading ...":
+        "Working ...":
         "Apply packs");
 
         resetButton.setEnabled(!b);
-        fetchPacks.setEnabled(!b);
+        //updateMenuItem.setEnabled(!b);
+        clearButton.setEnabled(!b);
     }
 
     public void setPacks(Map<String, Pack> packs){
@@ -126,7 +136,7 @@ public class MainForm {
         updateExistingPacks();
     }
 
-    private void updateExistingPacks(){
+    public void updateExistingPacks(){
         for (Map.Entry<String, Pack> entry : packs.entrySet()) {
             Pack pack = entry.getValue();
             pack.setDownload(pack.getExists());
@@ -136,7 +146,7 @@ public class MainForm {
         packsTable.updateUI();
     }
 
-    private void addDownloader(Pack p){
+    private void addDownloader(Pack p, PackDownloader.Command command){
         boolean exists = false;
         for (Component pd : downloadPanel.getComponents()) {
             if(pd instanceof PackDownloader) {
@@ -149,7 +159,7 @@ public class MainForm {
         }
 
         if(!exists) {
-            downloadPanel.add(new PackDownloader(p));
+            downloadPanel.add(new PackDownloader(p, command));
             downloadPanel.updateUI();
         }
     }
@@ -195,18 +205,170 @@ public class MainForm {
         }
     }
 
-    public void run() {
-        JFrame frame = new JFrame("Stepmania DLM");
-        frame.setContentPane(new MainForm().panel1);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                super.windowClosed(e);
+    private JMenuBar buildMenu(){
+        JMenuBar menu = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem close = new JMenuItem("Close");
+        close.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                MainForm.this.close();
             }
         });
-        frame.pack();
-        frame.setVisible(true);
+        JMenuItem save = new JMenuItem("Save list");
+        save.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+                chooser.addChoosableFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return (FilenameUtils.getExtension(f.getName()).equals("sml"));
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "Stepmania DLM pack list";
+                    }
+                });
+
+                int returnVal = chooser.showSaveDialog(panel1);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    FileOutputStream fos = null;
+                    try {
+                        fos = new FileOutputStream(chooser.getSelectedFile());
+                        for (Pack pack : packsModel.getPacks()) {
+                            if (pack.isDownload()) {
+                                fos.write((pack.getName()+"\n").getBytes());
+                            }
+                        }
+
+
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } finally {
+                        if (fos != null)
+                            try {
+                                fos.close();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                    }
+                }
+            }
+        });
+
+        JMenuItem load = new JMenuItem("Load list");
+        load.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+                chooser.addChoosableFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return (FilenameUtils.getExtension(f.getName()).equals("sml"));
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "Stepmania DLM pack list";
+                    }
+                });
+                //ArrayUtils.reverse(chooser.getChoosableFileFilters());
+
+                int returnVal = chooser.showSaveDialog(panel1);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    BufferedReader fis = null;
+                    try {
+                        fis = new BufferedReader(new FileReader(chooser.getSelectedFile()));
+
+                        for(String line; (line = fis.readLine()) != null; ) {
+                            if(packs.containsKey(line)){
+                                packs.get(line).setDownload(true);
+                            }
+                        }
+                        packsTable.updateUI();
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } finally {
+                        if (fis != null)
+                            try {
+                                fis.close();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                    }
+                }
+            }
+        });
+        updateMenuItem = new JMenuItem("Update packs");
+        updateMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(!working)
+                    providerLoading.updatePacks();
+            }
+        });
+
+        fileMenu.add(updateMenuItem);
+        fileMenu.add(save);
+        fileMenu.add(load);
+        fileMenu.add(close);
+
+        menu.add(fileMenu);
+
+        return menu;
+    }
+
+    public void close(){
+        //if(!working){
+            mainFrame.dispose();
+            System.exit(0);
+//        } else {
+//            int n = JOptionPane.showConfirmDialog(
+//                    MainForm.this.panel1,
+//                    "Do you really want to exit while working?",
+//                    "Exit",
+//                    JOptionPane.YES_NO_OPTION);
+//
+//            if(n == JOptionPane.YES_OPTION) {
+//                mainFrame.dispose();
+//                System.exit(0);
+//            }
+//        }
+    }
+
+    public void run() {
+        mainFrame = new JFrame("Stepmania DLM");
+        mainFrame.setContentPane(new MainForm().panel1);
+
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        mainFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                int n = JOptionPane.showConfirmDialog(
+                        MainForm.this.panel1,
+                        "Do you really want to exit while working?",
+                        "Exit",
+                        JOptionPane.YES_NO_OPTION);
+
+                if(n == JOptionPane.YES_OPTION) {
+                    close();
+                }
+
+            }
+
+        });
+
+
+        mainFrame.setJMenuBar(buildMenu());
+        mainFrame.pack();
+        mainFrame.setVisible(true);
     }
 
     private void createUIComponents() {
