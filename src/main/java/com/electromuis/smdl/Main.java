@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.List;
  */
 public class Main {
     public static void main(String args[]){
-
         try {
             UIManager.setLookAndFeel("com.seaglasslookandfeel.SeaGlassLookAndFeel");
         } catch (ClassNotFoundException e) {
@@ -30,5 +30,8 @@ public class Main {
 
         MainForm form = new MainForm();
         form.run();
+        if(args.length==1){
+            form.openList(new File(args[0]));
+        }
     }
 }

@@ -216,22 +216,12 @@ public class MainForm {
             }
         });
         JMenuItem save = new JMenuItem("Save list");
+        save.setAccelerator(KeyStroke.getKeyStroke(
+                KeyEvent.VK_S, InputEvent.CTRL_MASK));
         save.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-                chooser.addChoosableFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return (FilenameUtils.getExtension(f.getName()).equals("sml"));
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Stepmania DLM pack list";
-                    }
-                });
+                JFileChooser chooser = Settings.makeSMLFileChooser();
 
                 int returnVal = chooser.showSaveDialog(panel1);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -262,55 +252,24 @@ public class MainForm {
         });
 
         JMenuItem load = new JMenuItem("Load list");
+        load.setAccelerator(KeyStroke.getKeyStroke(
+                KeyEvent.VK_O, InputEvent.CTRL_MASK));
         load.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-                chooser.addChoosableFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return (FilenameUtils.getExtension(f.getName()).equals("sml"));
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "Stepmania DLM pack list";
-                    }
-                });
-                //ArrayUtils.reverse(chooser.getChoosableFileFilters());
-
-                int returnVal = chooser.showSaveDialog(panel1);
+                JFileChooser chooser = Settings.makeSMLFileChooser();
+                int returnVal = chooser.showOpenDialog(panel1);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    BufferedReader fis = null;
-                    try {
-                        fis = new BufferedReader(new FileReader(chooser.getSelectedFile()));
-
-                        for(String line; (line = fis.readLine()) != null; ) {
-                            if(packs.containsKey(line)){
-                                packs.get(line).setDownload(true);
-                            }
-                        }
-                        packsTable.updateUI();
-                    } catch (FileNotFoundException e1) {
-                        e1.printStackTrace();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    } finally {
-                        if (fis != null)
-                            try {
-                                fis.close();
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-                            }
-                    }
+                    openList(chooser.getSelectedFile());
                 }
             }
         });
         updateMenuItem = new JMenuItem("Update packs");
         updateMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
                 if(!working)
                     providerLoading.updatePacks();
+
             }
         });
 
@@ -322,6 +281,33 @@ public class MainForm {
         menu.add(fileMenu);
 
         return menu;
+    }
+
+    public void openList(File f){
+        if(f.exists()) {
+            BufferedReader fis = null;
+            try {
+                fis = new BufferedReader(new FileReader(f));
+
+                for (String line; (line = fis.readLine()) != null; ) {
+                    if (packs.containsKey(line)) {
+                        packs.get(line).setDownload(true);
+                    }
+                }
+                packsTable.updateUI();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } finally {
+                if (fis != null)
+                    try {
+                        fis.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+            }
+        }
     }
 
     public void close(){

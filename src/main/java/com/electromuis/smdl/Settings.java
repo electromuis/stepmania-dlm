@@ -1,7 +1,10 @@
 package com.electromuis.smdl;
 
+import org.apache.commons.io.FilenameUtils;
 import org.ini4j.Wini;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -43,6 +46,36 @@ public class Settings {
 
     public Map<String, Pack> getLastPacks(){
         return null;
+    }
+
+    public static JFileChooser makeSMLFileChooser(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.addChoosableFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return (FilenameUtils.getExtension(f.getName()).equals("sml"));
+            }
+
+            @Override
+            public String getDescription() {
+                return "Stepmania DLM pack list";
+            }
+        });
+        chooser.addChoosableFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return true;
+            }
+
+            @Override
+            public String getDescription() {
+                return "All files";
+            }
+        });
+
+        return chooser;
     }
 
     public void setLastPacks(Map<String, Pack> packs){
