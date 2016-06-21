@@ -14,7 +14,8 @@ public class ProviderLoading extends JDialog {
     private PackProvider[] providers = {
             //new MockProvider(),
             new StepmaniaOnline(),
-            new RicoFtpProvider()
+            new BrekerStackProvider()
+            //new RicoFtpProvider()
     };
     private MainForm mainForm;
 
