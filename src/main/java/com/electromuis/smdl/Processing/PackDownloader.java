@@ -71,13 +71,15 @@ public class PackDownloader extends JPanel {
 
     public void setStatus(Status s){
         status = s;
-        statusLabel.setText(command.status + "::" + s.status);
-        updateUI();
+        if(s==Status.PENDING){
+            statusLabel.setText(command.status);
+        } else {
+            statusLabel.setText(command.status + "::" + s.status);
+        }
     }
 
     public void setPercentage(int val){
         progressBar.setValue(val);
-        updateUI();
     }
 
     public void start(final MainForm mainForm){

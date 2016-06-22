@@ -1,17 +1,16 @@
 package com.electromuis.smdl;
 
 import com.electromuis.smdl.Processing.PackDownloader;
+import com.electromuis.smdl.provider.PackProvider;
 import com.electromuis.smdl.provider.ProviderLoading;
-import com.sun.deploy.util.ArrayUtil;
-import org.apache.commons.io.FilenameUtils;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import javax.swing.*;
-import javax.swing.filechooser.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -30,12 +29,15 @@ public class MainForm {
     private JMenuItem updateMenuItem;
     private PacksModel packsModel;
     private static Settings settings;
-    public static Map<String, Pack> packs = new HashMap<String, Pack>();
+    public Map<String, Pack> packs = new HashMap<String, Pack>();
     private ProviderLoading providerLoading;
     private boolean working = false;
     private JFrame mainFrame;
+    private PackManager packManager;
 
     public MainForm() {
+        packManager = new PackManager();
+
         applyPacksButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -83,14 +85,13 @@ public class MainForm {
                     Pack pack = entry.getValue();
                     pack.setDownload(false);
                 }
-                packsTable.updateUI();
+                packsModel.fireTableDataChanged();
             }
         });
 
         resetButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
                 updateExistingPacks();
             }
         });
@@ -101,9 +102,42 @@ public class MainForm {
         initSettings();
 
         packsTable.setModel(packsModel);
+        packsTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                System.out.println(packsTable.getModel().getRowCount());
+                System.out.println(Integer.toHexString(System.identityHashCode(packs)));
+                //packsModel.fireTableDataChanged();
+            }
+        });
 
         providerLoading = new ProviderLoading(this);
         providerLoading.pack();
+
+
+        getNewPacks();
+    }
+
+    private void getNewPacks(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                providerLoading.showLoading();
+                for(PackProvider pv : providerLoading.getProviders())
+                    try {
+                        for(Pack p : pv.getPacks())
+                            if(!packs.containsKey(p.getName())) {
+                                packs.put(p.getName(), p);
+                            }
+                    } catch (IOException e) {
+                        JOptionPane.showMessageDialog(panel1, "There was an error loading the packs, are you connected to the internet?", "Network error", JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
+                    }
+
+                providerLoading.setVisible(false);
+                updateExistingPacks();
+            }
+        }).start();
     }
 
     public void setWorking(boolean b){
@@ -130,20 +164,14 @@ public class MainForm {
         clearButton.setEnabled(!b);
     }
 
-    public void setPacks(Map<String, Pack> packs){
-        this.packs = packs;
-
-        updateExistingPacks();
-    }
-
     public void updateExistingPacks(){
         for (Map.Entry<String, Pack> entry : packs.entrySet()) {
             Pack pack = entry.getValue();
             pack.setDownload(pack.getExists());
         }
 
+        panel1.requestFocus();
         packsModel.setPacks(getPacksArray());
-        packsTable.updateUI();
     }
 
     private void addDownloader(Pack p, PackDownloader.Command command){
@@ -205,23 +233,36 @@ public class MainForm {
         }
     }
 
+    private void changeSongsFolder(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showSaveDialog(panel1);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourFolder = chooser.getSelectedFile();
+            settings.setSongsFolder(yourFolder.getAbsolutePath());
+        }
+    }
+
     private JMenuBar buildMenu(){
         JMenuBar menu = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
+        //Close button
         JMenuItem close = new JMenuItem("Close");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 MainForm.this.close();
             }
         });
+
+        //Save button
         JMenuItem save = new JMenuItem("Save list");
         save.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_S, InputEvent.CTRL_MASK));
         save.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = Settings.makeSMLFileChooser();
+                JFileChooser chooser = settings.makeSMLFileChooser();
 
                 int returnVal = chooser.showSaveDialog(panel1);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -233,8 +274,6 @@ public class MainForm {
                                 fos.write((pack.getName()+"\n").getBytes());
                             }
                         }
-
-
                     } catch (FileNotFoundException e1) {
                         e1.printStackTrace();
                     } catch (IOException e1) {
@@ -251,36 +290,51 @@ public class MainForm {
             }
         });
 
+        //Load button
         JMenuItem load = new JMenuItem("Load list");
         load.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_O, InputEvent.CTRL_MASK));
         load.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser chooser = Settings.makeSMLFileChooser();
+                JFileChooser chooser = settings.makeSMLFileChooser();
                 int returnVal = chooser.showOpenDialog(panel1);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     openList(chooser.getSelectedFile());
                 }
             }
         });
+
+        //Update packs button
         updateMenuItem = new JMenuItem("Update packs");
         updateMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
                 if(!working)
-                    providerLoading.updatePacks();
-
+                    getNewPacks();
             }
         });
 
-        fileMenu.add(updateMenuItem);
+        JMenuItem changeFolder = new JMenuItem("Change song folder");
+        changeFolder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!working)
+                    changeSongsFolder();
+            }
+        });
+
+        //fileMenu.add(updateMenuItem);
         fileMenu.add(save);
         fileMenu.add(load);
+        fileMenu.add(changeFolder);
         fileMenu.add(close);
 
         menu.add(fileMenu);
 
         return menu;
+    }
+
+    public Map<String, Pack> getPacks() {
+        return packs;
     }
 
     public void openList(File f){
@@ -294,7 +348,7 @@ public class MainForm {
                         packs.get(line).setDownload(true);
                     }
                 }
-                packsTable.updateUI();
+                packsModel.fireTableDataChanged();
             } catch (FileNotFoundException e1) {
                 e1.printStackTrace();
             } catch (IOException e1) {
@@ -331,6 +385,8 @@ public class MainForm {
     public void run() {
         mainFrame = new JFrame("Stepmania DLM");
         mainFrame.setContentPane(new MainForm().panel1);
+
+        mainFrame.setIconImage(settings.getIcon().getImage());
 
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

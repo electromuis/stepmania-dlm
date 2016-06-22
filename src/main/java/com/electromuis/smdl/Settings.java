@@ -5,6 +5,8 @@ import org.ini4j.Wini;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -16,6 +18,7 @@ import java.util.Map;
 public class Settings {
     private Wini config;
     private File jsonConfig;
+    public static final String EXT="sml";
 
     public Settings(){
         try {
@@ -48,14 +51,24 @@ public class Settings {
         return null;
     }
 
-    public static JFileChooser makeSMLFileChooser(){
+    public JFileChooser makeSMLFileChooser(){
         JFileChooser chooser = new JFileChooser();
+
+        chooser.setFileView(new FileView() {
+            @Override
+            public Icon getIcon(File f) {
+                if (FilenameUtils.getExtension(f.getName()).equals("sml"))
+                    return Settings.this.getIconSmall();
+                else
+                    return super.getIcon(f);
+            }
+        });
         chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.addChoosableFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return (FilenameUtils.getExtension(f.getName()).equals("sml"));
+                return (FilenameUtils.getExtension(f.getName()).equals(EXT));
             }
 
             @Override
@@ -87,5 +100,19 @@ public class Settings {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public ImageIcon getIcon(){
+        URL iconURL = getClass().getClassLoader().getResource("images/icon.png");
+        ImageIcon icon = new ImageIcon(iconURL);
+
+        return icon;
+    }
+
+    public ImageIcon getIconSmall(){
+        URL iconURL = getClass().getClassLoader().getResource("images/icon_small.png");
+        ImageIcon icon = new ImageIcon(iconURL);
+
+        return icon;
     }
 }

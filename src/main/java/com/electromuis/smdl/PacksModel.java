@@ -20,10 +20,12 @@ public class PacksModel extends AbstractTableModel {
 
     public void setPacks(Pack[] packs) {
         this.packs = packs;
+        fireTableDataChanged();
+
     }
 
     public int getRowCount() {
-        return packs.length;
+        return getPacks().length;
     }
 
     public int getColumnCount() {

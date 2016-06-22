@@ -15,6 +15,9 @@ import java.util.List;
  * Created by electromuis on 17.05.16.
  */
 public class RicoFtpProvider implements PackProvider {
+    public static final String username = "public";
+    public static final String password = "ddr1352";
+
     public List<Pack> getPacks() throws IOException {
         List<Pack> packs = new ArrayList<Pack>();
 
@@ -30,7 +33,7 @@ public class RicoFtpProvider implements PackProvider {
                 ftp.disconnect();
                 System.err.println("FTP server refused connection.");
             } else {
-                ftp.login("public", "ddr1352");
+                ftp.login(username, password);
 
                 String root = "DDR Download Folder"+File.separator+"DLM";
 
