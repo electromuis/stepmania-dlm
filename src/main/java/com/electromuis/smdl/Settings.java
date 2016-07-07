@@ -18,7 +18,6 @@ import java.util.Map;
 public class Settings {
     private Wini config;
     private File jsonConfig;
-    public static final String EXT="sml";
 
     public Settings(){
         try {
@@ -65,17 +64,7 @@ public class Settings {
         });
         chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return (FilenameUtils.getExtension(f.getName()).equals(EXT));
-            }
-
-            @Override
-            public String getDescription() {
-                return "Stepmania DLM pack list";
-            }
-        });
+        chooser.addChoosableFileFilter(new SMLFileFilter());
         chooser.addChoosableFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
@@ -114,5 +103,19 @@ public class Settings {
         ImageIcon icon = new ImageIcon(iconURL);
 
         return icon;
+    }
+
+    public static class SMLFileFilter extends FileFilter {
+        public static final String EXT="sml";
+
+        @Override
+        public boolean accept(File f) {
+            return (FilenameUtils.getExtension(f.getName()).equals(EXT));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Stepmania DLM pack list";
+        }
     }
 }

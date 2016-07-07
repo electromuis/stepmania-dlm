@@ -1,11 +1,18 @@
 package com.electromuis.smdl;
 
 import com.electromuis.smdl.Processing.PackDownloader;
+import com.electromuis.smdl.provider.FtpProvider;
+import com.electromuis.smdl.provider.HttpProvider;
+import com.electromuis.smdl.provider.PackProvider;
+import com.electromuis.smdl.provider.WebDavProvider;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.DecimalFormat;
+import java.util.Comparator;
 
 /**
  * Created by electromuis on 12.05.16.
@@ -15,18 +22,46 @@ public class Pack {
     private String size;
     private String type;
     private String url;
+    private String fileName;
     private boolean download = false;
     private int progress;
     private Song[] songs;
+    private long contentLength;
+    private PackProvider provider;
 
-    public Pack(String name, String size, String type, String url) {
+    public Pack(PackProvider provider, String name, String size, String type, String url, String fileName) {
         this.name = name;
         this.size = size;
         this.type = type;
         this.url = url;
+        this.fileName = fileName;
+        this.provider = provider;
     }
 
-    public String download(PackDownloader downloader) throws IOException {return null;}
+    public static String readableFileSize(long size) {
+        if(size <= 0) return "0";
+        final String[] units = new String[] { "B", "Kb", "Mb", "Gb", "Tb" };
+        int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
+    public Pack(PackProvider provider, String name, String size, String type, String url, String fileName, long contentLength){
+        this(provider, name, size, type, url, fileName);
+        this.contentLength = contentLength;
+    }
+
+    public Pack(PackProvider provider, String url, String filename, String type, long contentLength) {
+        this(provider, FilenameUtils.getBaseName(filename), readableFileSize(contentLength), type, url, filename, contentLength);
+    }
+
+    public Pack(PackProvider provider, String name, String size, String type, String url) {
+        this(provider, name, size, type, url, FilenameUtils.getName(url), 0);
+    }
+
+
+    public String download(PackDownloader downloader) throws IOException {
+        return provider.download(this, downloader);
+    }
 
     public String getName() {
         return name;
@@ -107,5 +142,29 @@ public class Pack {
         }
         if (!f.delete())
             throw new FileNotFoundException("Failed to delete file: " + f);
+    }
+
+    public long getContentLength() {
+        return contentLength;
+    }
+
+    public void setContentLength(long contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public static class PackComparator implements Comparator<Pack> {
+        @Override
+        public int compare(Pack o1, Pack o2) {
+
+            return o1.getName().compareTo(o2.getName());
+        }
     }
 }

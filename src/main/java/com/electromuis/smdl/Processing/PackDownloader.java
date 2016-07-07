@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * Created by electromuis on 13.05.16.
@@ -32,6 +33,7 @@ public class PackDownloader extends JPanel {
         DELETING("Deleting"),
         DOWNLOADING("Downloading"),
         EXTRACTING("Extracting"),
+        FAILED("Failed"),
         DONE("Done");
 
         public String status;
@@ -127,14 +129,19 @@ public class PackDownloader extends JPanel {
                 new File(archive).delete();
 
             } else {
+                setStatus(Status.FAILED);
                 System.out.println("Download failed");
-                JOptionPane.showMessageDialog(PackDownloader.this, "There was an error downloading the pack", "Archive error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(PackDownloader.this, "There was an error downloading the pack", "Download error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Extractor.ExtractionException e) {
+            setStatus(Status.FAILED);
             JOptionPane.showMessageDialog(PackDownloader.this, "There was an error extracting the pack", "Archive error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | IllegalArgumentException e) {
+           setStatus(Status.FAILED);
+           JOptionPane.showMessageDialog(PackDownloader.this, "There was an error downloading the pack", "Download error", JOptionPane.ERROR_MESSAGE);
+           System.out.println("Download failed");
+           e.printStackTrace();
         }
 
     }

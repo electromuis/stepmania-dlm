@@ -76,7 +76,7 @@ public class PacksModel extends AbstractTableModel {
     }
 
     public Pack getPack(int i){
-        return packs[i];
+        return getPacks()[i];
     }
 
 

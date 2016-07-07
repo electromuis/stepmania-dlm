@@ -6,6 +6,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +17,10 @@ import java.util.List;
  * Created by electromuis on 12.05.16.
  */
 public class Main {
+    public Main(){
+
+    }
+
     public static void main(String args[]){
         try {
             UIManager.setLookAndFeel("com.seaglasslookandfeel.SeaGlassLookAndFeel");
@@ -29,7 +35,7 @@ public class Main {
         }
 
         MainForm form = new MainForm();
-        form.run();
+        form.getNewPacks();
         if(args.length==1){
             form.openList(new File(args[0]));
         }
