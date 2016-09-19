@@ -57,7 +57,7 @@ public class PackDownloader extends JPanel {
         pack = p;
         command = c;
 
-        setLayout(new GridBagLayout());
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         label = new JLabel(p.getName());
         add(label);
@@ -67,6 +67,8 @@ public class PackDownloader extends JPanel {
 
         statusLabel = new JLabel();
         add(statusLabel);
+
+        setSize(100, 30);
 
         setStatus(Status.PENDING);
     }

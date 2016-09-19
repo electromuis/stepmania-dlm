@@ -5,8 +5,12 @@ import com.electromuis.smdl.provider.PackProvider;
 import com.electromuis.smdl.provider.ProviderLoading;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -19,6 +23,10 @@ import java.util.List;
  */
 public class MainForm  extends JFrame {
     private JTable packsTable;
+    TableRowSorter<TableModel> tableSorter;
+    public Map<String, Pack> packs = new HashMap<String, Pack>();
+    private PacksModel packsModel;
+
     private JPanel panel1;
     private JButton applyPacksButton;
     private JScrollPane downloadPane;
@@ -27,10 +35,10 @@ public class MainForm  extends JFrame {
     private JButton resetButton;
     private JPanel panel2;
     private JButton clearButton;
+    private JTextField txtFilter;
     private JMenuItem updateMenuItem;
-    private PacksModel packsModel;
     private static Settings settings;
-    public Map<String, Pack> packs = new HashMap<String, Pack>();
+
     private ProviderLoading providerLoading;
     private boolean working = false;
 
@@ -42,7 +50,7 @@ public class MainForm  extends JFrame {
 
         setContentPane(panel1);
         pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         setIconImage(settings.getIcon().getImage());
         setLocationRelativeTo(null);
@@ -50,6 +58,8 @@ public class MainForm  extends JFrame {
 
         packsModel = new PacksModel(new Pack[0]);
         packsTable.setModel(packsModel);
+        tableSorter = new TableRowSorter<TableModel>(packsModel);
+        packsTable.setRowSorter(tableSorter);
 
         providerLoading = new ProviderLoading(this);
         providerLoading.pack();
@@ -153,19 +163,35 @@ public class MainForm  extends JFrame {
 
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosed(WindowEvent e) {
-                int n = JOptionPane.showConfirmDialog(
-                        MainForm.this.panel1,
-                        "Do you really want to exit while working?",
-                        "Exit",
-                        JOptionPane.YES_NO_OPTION);
-
-                if(n == JOptionPane.YES_OPTION) {
-                    close();
+            public void windowClosing(WindowEvent e) {
+                if(close()){
+                    System.exit(0);
                 }
+            }
+        });
 
+        txtFilter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changed(e);
             }
 
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changed(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed(e);
+            }
+
+            private void changed(DocumentEvent e){
+                if(txtFilter.getText().length()==0)
+                    tableSorter.setRowFilter(null);
+                else
+                    tableSorter.setRowFilter(RowFilter.regexFilter("(?i)"+txtFilter.getText(), 0));
+            }
         });
     }
 
@@ -192,9 +218,14 @@ public class MainForm  extends JFrame {
         resetButton.setEnabled(!b);
         //updateMenuItem.setEnabled(!b);
         clearButton.setEnabled(!b);
+
+        if(!b){
+            JOptionPane.showMessageDialog(this, "Applying done!", "Done", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public void updateExistingPacks(){
+        txtFilter.setText("");
         for (Map.Entry<String, Pack> entry : packs.entrySet()) {
             Pack pack = entry.getValue();
             pack.setDownload(pack.getExists());
@@ -203,6 +234,8 @@ public class MainForm  extends JFrame {
         panel1.requestFocus();
         packsModel.setPacks(getPacksArray());
     }
+
+
 
     private void addDownloader(Pack p, PackDownloader.Command command){
         boolean exists = false;
@@ -288,7 +321,9 @@ public class MainForm  extends JFrame {
         JMenuItem close = new JMenuItem("Close");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                MainForm.this.close();
+
+                if(close())
+                    System.exit(0);
             }
         });
 
@@ -405,29 +440,31 @@ public class MainForm  extends JFrame {
         }
     }
 
-    public void close(){
-        //if(!working){
+    public boolean close(){
+        if(!working){
             providerLoading.disconnect();
             dispose();
-            System.exit(0);
-//        } else {
-//            int n = JOptionPane.showConfirmDialog(
-//                    MainForm.this.panel1,
-//                    "Do you really want to exit while working?",
-//                    "Exit",
-//                    JOptionPane.YES_NO_OPTION);
-//
-//            if(n == JOptionPane.YES_OPTION) {
-//                mainFrame.dispose();
-//                System.exit(0);
-//            }
-//        }
+            //todo force stop downloaders
+            return true;
+        } else {
+            int n = JOptionPane.showConfirmDialog(
+                    this,
+                    "Do you really want to exit while working?",
+                    "Exit",
+                    JOptionPane.YES_NO_OPTION);
+
+            if(n == JOptionPane.YES_OPTION) {
+                providerLoading.disconnect();
+                dispose();
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
-
-
 
     private void createUIComponents() {
         downloadPanel = new JPanel();
-        downloadPanel.setLayout(new GridLayout(0,1 ));
+        downloadPanel.setLayout(new BoxLayout(downloadPanel, BoxLayout.Y_AXIS));
     }
 }

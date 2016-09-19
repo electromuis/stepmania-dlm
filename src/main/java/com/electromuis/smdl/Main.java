@@ -6,6 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -35,6 +36,7 @@ public class Main {
         }
 
         MainForm form = new MainForm();
+
         form.getNewPacks();
         if(args.length==1){
             form.openList(new File(args[0]));

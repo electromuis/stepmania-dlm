@@ -15,6 +15,12 @@ public class ProviderLoading extends JDialog {
     private JProgressBar progress;
     private PackProvider[] providers = {
             //new MockProvider(),
+            new WebDavProvider(new DefaultProvider.Config(
+                    "https://debreker.stackstorage.com",
+                    "electromuis",
+                    "Falkensteiner12",
+                    "/remote.php/webdav/Songs"
+            )),
             new HttpProvider(new HttpProvider.Config(
                     "http://stepmaniaonline.net/index.php?page=downloads",
                     "div.block:has(div.blocktitle:contains(Songs)) tr"
@@ -39,12 +45,6 @@ public class ProviderLoading extends JDialog {
                     return packsList;
                 }
             }),
-            new WebDavProvider(new DefaultProvider.Config(
-                    "https://debreker.stackstorage.com",
-                    "electromuis",
-                    "Falkensteiner12",
-                    "/remote.php/webdav/Songs"
-            )),
 //            new FtpProvider(new DefaultProvider.Config(
 //                    "gamebreakersnl.synology.me",
 //                    "public",
