@@ -1,11 +1,51 @@
-.button {
-    -fx-background-color: black;
+#menu {
+    -fx-background-color: #39abab;
+    -fx-padding: 10 10 10 20;
 }
 
-.table-row-cell:even {
-    -fx-background-color: red;
+#menu .button:pressed, #menu .button:hover {
+    -fx-background-color: #53bbbc;
 }
 
-.table-row-cell:odd {
-    -fx-background-color: green;
+#menu .label {
+    -fx-min-height: 40;
+    -fx-background-color: #39abab;
+    -fx-font-size: 15pt;
+    -fx-text-fill: white;
+    -fx-padding: 0 20 0 0;
+}
+
+#menu .button {
+    -fx-background-color: #39abab;
+    -fx-text-fill: white;
+    -fx-min-height: 40;
+}
+
+#availablePacks .label, #downloadPacks .label {
+    -fx-font-size: 17pt;
+    -fx-text-fill: #39abab;
+    -fx-padding: 0 0 10 0;
+}
+
+#availablePacks, #downloadPacks {
+    -fx-padding: 10 10 10 10;
+}
+
+#availablePacks {
+    -fx-background-color: #ecf7f6;
+}
+
+#downloadPacks {
+    -fx-background-color: white;
+}
+
+.table-view .column-header,
+.table-view .column-header .filler,
+.table-view .column-header-background .filler {
+    -fx-background-color: #ecf7f6;
+}
+
+.table-view, .table-view:focused {
+    -fx-box-border: transparent;
+    -fx-focus-color: transparent;
 }
