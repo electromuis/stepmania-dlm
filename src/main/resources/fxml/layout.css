@@ -1,0 +1,11 @@
+.button {
+    -fx-background-color: black;
+}
+
+.table-row-cell:even {
+    -fx-background-color: red;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: green;
+}

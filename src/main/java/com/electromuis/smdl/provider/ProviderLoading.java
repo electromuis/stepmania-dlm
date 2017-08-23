@@ -37,7 +37,7 @@ public class ProviderLoading extends JDialog {
                                     info.get(0).text(),
                                     info.get(1).text(),
                                     info.get(2).text(),
-                                    "http://stepmaniaonline.net" + info.get(0).select("a").attr("href").replace(" ", "%20")
+                                    info.get(0).select("a").attr("href").replace(" ", "%20")
                             ));
                         }
                     }
