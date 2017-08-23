@@ -10,7 +10,7 @@
 #menu .label {
     -fx-min-height: 40;
     -fx-background-color: #39abab;
-    -fx-font-size: 15pt;
+    -fx-font-size: 15;
     -fx-text-fill: white;
     -fx-padding: 0 20 0 0;
 }
@@ -37,6 +37,10 @@
 
 #downloadPacks {
     -fx-background-color: white;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 8;
 }
 
 .table-view .column-header,

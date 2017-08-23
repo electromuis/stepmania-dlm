@@ -5,6 +5,7 @@ import com.electromuis.smdl.provider.FtpProvider;
 import com.electromuis.smdl.provider.HttpProvider;
 import com.electromuis.smdl.provider.PackProvider;
 import com.electromuis.smdl.provider.WebDavProvider;
+import javafx.fxml.FXML;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -18,11 +19,15 @@ import java.util.Comparator;
  * Created by electromuis on 12.05.16.
  */
 public class Pack {
+    @FXML
     private String name;
+    @FXML
     private String size;
+    @FXML
     private String type;
     private String url;
     private String fileName;
+    @FXML
     private boolean download = false;
     private int progress;
     private Song[] songs;
