@@ -61,8 +61,7 @@ public class MainForm  extends JFrame {
         tableSorter = new TableRowSorter<TableModel>(packsModel);
         packsTable.setRowSorter(tableSorter);
 
-        providerLoading = new ProviderLoading(this);
-        providerLoading.pack();
+        providerLoading = new ProviderLoading();
 
         addListeners();
 
@@ -73,7 +72,7 @@ public class MainForm  extends JFrame {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                providerLoading.showLoading();
+
                 for(PackProvider pv : providerLoading.getProviders()) {
                     System.out.println("Loading provider: " + pv.getClass().getName());
                     try {
@@ -87,7 +86,6 @@ public class MainForm  extends JFrame {
                     }
                 }
 
-                providerLoading.setVisible(false);
                 updateExistingPacks();
             }
         }).start();

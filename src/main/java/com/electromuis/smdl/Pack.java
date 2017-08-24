@@ -5,6 +5,8 @@ import com.electromuis.smdl.provider.FtpProvider;
 import com.electromuis.smdl.provider.HttpProvider;
 import com.electromuis.smdl.provider.PackProvider;
 import com.electromuis.smdl.provider.WebDavProvider;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,7 +30,7 @@ public class Pack {
     private String url;
     private String fileName;
     @FXML
-    private boolean download = false;
+    private BooleanProperty download;
     private int progress;
     private Song[] songs;
     private long contentLength;
@@ -41,6 +43,7 @@ public class Pack {
         this.url = url;
         this.fileName = fileName;
         this.provider = provider;
+        download = new SimpleBooleanProperty(false);
     }
 
     public static String readableFileSize(long size) {
@@ -109,11 +112,15 @@ public class Pack {
     }
 
     public boolean isDownload() {
-        return download;
+        return download.get();
     }
 
     public void setDownload(boolean download) {
-        this.download = download;
+        this.download.set(download);
+    }
+
+    public BooleanProperty downloadProperty() {
+        return download;
     }
 
     public int getProgress() {
