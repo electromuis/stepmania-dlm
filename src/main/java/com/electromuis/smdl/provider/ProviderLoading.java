@@ -1,6 +1,5 @@
 package com.electromuis.smdl.provider;
 
-import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
 import javafx.scene.control.ProgressBar;
 import org.jsoup.nodes.Element;
@@ -16,7 +15,7 @@ import java.util.concurrent.Callable;
 
 public class ProviderLoading {
     private PackProvider[] providers = {
-            new MockProvider(),
+            //new MockProvider(),
             new WebDavProvider(new DefaultProvider.Config(
                     "https://debreker.stackstorage.com",
                     "electromuis",
@@ -63,6 +62,7 @@ public class ProviderLoading {
         Map<String, Pack> packs = new HashMap<>();
 
         float i = 0;
+        boolean error = false;
         for(PackProvider pv : providers) {
             i ++;
 
@@ -75,9 +75,13 @@ public class ProviderLoading {
                         packs.put(p.getName(), p);
                     }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(null, "There was an error loading the packs, are you connected to the internet?", "Network error", JOptionPane.ERROR_MESSAGE);
+                error = true;
                 e.printStackTrace();
             }
+        }
+
+        if(error) {
+            JOptionPane.showMessageDialog(null, "There was an error loading the packs, are you connected to the internet?", "Network error", JOptionPane.ERROR_MESSAGE);
         }
 
         return packs.values().toArray(new Pack[0]);

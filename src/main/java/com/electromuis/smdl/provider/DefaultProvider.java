@@ -1,8 +1,10 @@
 package com.electromuis.smdl.provider;
 
+import com.electromuis.smdl.MainController;
 import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
 import com.electromuis.smdl.Processing.PackDownloader;
+import com.electromuis.smdl.Processing.PackRow;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,12 +17,12 @@ import java.io.InputStream;
 public abstract class DefaultProvider implements PackProvider {
     private static int BUFFER_SIZE = 2048;
 
-    public String downloadFile(PackDownloader downloader, InputStream inputStream, Pack p) throws IOException {
-        String saveFilePath = MainForm.getSettings().getSongsFolder() + File.separator + p.getFileName();
+    public String downloadFile(PackRow downloader, InputStream inputStream, Pack p) throws IOException {
+        String saveFilePath = MainController.getSettings().getSongsFolder() + File.separator + p.getFileName();
         File saveFile = new File(saveFilePath);
 
         if (!(saveFile.exists() && (saveFile.length() == p.getContentLength()))) {
-            downloader.setStatus(PackDownloader.Status.DOWNLOADING);
+            downloader.setStatus(PackRow.Status.DOWNLOADING);
 
             FileOutputStream outputStream = new FileOutputStream(saveFilePath);
 
@@ -33,8 +35,10 @@ public abstract class DefaultProvider implements PackProvider {
                 outputStream.write(buffer, 0, bytesRead);
 
 
-                int progress = (int) ((100 * readAmmount) / p.getContentLength());
-                downloader.setPercentage(progress);
+                float progress = ((float)readAmmount) / p.getContentLength();
+                if(downloader.getBar() != null) {
+                    downloader.getBar().setProgress(progress);
+                }
             }
             outputStream.close();
         }
@@ -48,7 +52,7 @@ public abstract class DefaultProvider implements PackProvider {
     public abstract InputStream getInputStream(Pack p) throws IOException;
 
     @Override
-    public String download(Pack p, PackDownloader pd) throws IOException {
+    public String download(Pack p, PackRow pd) throws IOException {
         return downloadFile(pd, getInputStream(p), p);
     }
 

@@ -1,6 +1,7 @@
 package com.electromuis.smdl;
 
-import com.electromuis.smdl.Processing.PackDownloader;
+import com.electromuis.smdl.Processing.PackRow;
+import com.electromuis.smdl.Processing.PackRowView;
 import com.electromuis.smdl.provider.FtpProvider;
 import com.electromuis.smdl.provider.HttpProvider;
 import com.electromuis.smdl.provider.PackProvider;
@@ -67,7 +68,7 @@ public class Pack {
     }
 
 
-    public String download(PackDownloader downloader) throws IOException {
+    public String download(PackRow downloader) throws IOException {
         return provider.download(this, downloader);
     }
 
@@ -136,7 +137,7 @@ public class Pack {
     }
 
     private File getFolder(){
-        return (new File(MainForm.getSettings().getSongsFolder()+File.separator+name));
+        return (new File(MainController.getSettings().getSongsFolder()+File.separator+name));
     }
 
     public void deletePack(){

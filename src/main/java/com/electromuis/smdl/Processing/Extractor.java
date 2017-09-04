@@ -58,8 +58,7 @@ public class Extractor {
             this.isFolder = (Boolean) inArchive.getProperty(index,
                     PropID.IS_FOLDER);
 
-            int progress = 100*index/inArchive.getNumberOfItems();
-            packDownloader.setPercentage(progress);
+            packDownloader.getBar().setProgress(((float)index) / inArchive.getNumberOfItems());
 
             if (extractAskMode != ExtractAskMode.EXTRACT) {
                 // Skipped files or files being tested
@@ -154,9 +153,9 @@ public class Extractor {
     private String archive;
     private String outputDirectory;
     private File outputDirectoryFile;
-    private PackDownloader packDownloader;
+    private PackRow packDownloader;
 
-    Extractor(String archive, String outputDirectory, PackDownloader packDownloader) {
+    Extractor(String archive, String outputDirectory, PackRow packDownloader) {
         this.archive = archive;
         this.outputDirectory = outputDirectory;
         this.packDownloader = packDownloader;

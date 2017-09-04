@@ -2,6 +2,7 @@ package com.electromuis.smdl.provider;
 
 import com.electromuis.smdl.Pack;
 import com.electromuis.smdl.Processing.PackDownloader;
+import com.electromuis.smdl.Processing.PackRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +24,19 @@ public class MockProvider implements PackProvider {
     }
 
     @Override
-    public String download(Pack p, PackDownloader pd) throws IOException {
+    public String download(Pack p, PackRow pd) throws IOException {
+        for (int i = 0; i < 101; i++) {
+            if(pd.getBar() != null) {
+                pd.getBar().setProgress((float)i / 100);
+            }
+
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         return null;
     }
 

@@ -49,7 +49,38 @@
     -fx-background-color: #ecf7f6;
 }
 
-.table-view, .table-view:focused {
+.table-view, .table-view:focused, .table-view .table-cell {
     -fx-box-border: transparent;
     -fx-focus-color: transparent;
+}
+
+.check-box .box {
+    -fx-background-color: #A8A8A8;
+    -fx-border-color:transparent;
+    -fx-border-radius: 0,0,0,0;
+    -fx-background-radius: 0,0,0,0;
+}
+
+.check-box .mark {
+    -fx-background-color: #A8A8A8;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #39abab;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #39abab;
+}
+
+.progress-bar .track{
+     -fx-background-color: #A8A8A8;
+     -fx-background-insets: 0, 0, 0, 0;
+     -fx-background-radius: 0, 0, 0, 0;
+}
+
+.progress-bar .bar {
+     -fx-background-color: #7BFF6E;
+     -fx-background-insets: 0, 0, 0, 0;
+     -fx-background-radius: 0, 0, 0, 0;
 }

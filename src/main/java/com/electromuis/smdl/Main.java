@@ -25,12 +25,5 @@ public class Main extends Application {
 
     public static void main(String args[]){
         launch(args);
-
-//        MainForm form = new MainForm();
-//
-//        form.getNewPacks();
-//        if(args.length==1){
-//            form.openList(new File(args[0]));
-//        }
     }
 }

@@ -118,4 +118,29 @@ public class Settings {
             return "Stepmania DLM pack list";
         }
     }
+
+    public void initSettings(){
+
+        if (getSongsFolder()==null){
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY);
+            int returnVal = chooser.showSaveDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File yourFolder = chooser.getSelectedFile();
+                setSongsFolder(yourFolder.getAbsolutePath());
+            } else {
+                initSettings();
+            }
+        }
+    }
+
+    public void changeSongsFolder(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showSaveDialog(null);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourFolder = chooser.getSelectedFile();
+            setSongsFolder(yourFolder.getAbsolutePath());
+        }
+    }
 }
