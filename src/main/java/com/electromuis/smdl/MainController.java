@@ -1,10 +1,9 @@
 package com.electromuis.smdl;
 
-import com.electromuis.smdl.Processing.PackDownloader;
 import com.electromuis.smdl.Processing.PackRow;
 import com.electromuis.smdl.Processing.PackRowView;
 import com.electromuis.smdl.provider.ProviderLoading;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.sun.xml.internal.ws.util.StringUtils;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -14,26 +13,19 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.electromuis.smdl.Processing.PackRow.Status.*;
 import static com.electromuis.smdl.Processing.PackRow.Command.*;
@@ -45,6 +37,8 @@ public class MainController {
     @FXML
     ProgressBar progress;
 
+    @FXML
+    HBox menu;
 
     @FXML
     ListView<PackRow> downloadContainer;
@@ -107,7 +101,7 @@ public class MainController {
 
         for(Field f : Pack.class.getDeclaredFields()) {
             if(f.isAnnotationPresent(FXML.class)) {
-                TableColumn col = new TableColumn(f.getName());
+                TableColumn col = new TableColumn(StringUtils.capitalize(f.getName()));
                 col.setPrefWidth(100);
                 if(f.getType() == String.class) {
                     col.setCellValueFactory(new PropertyValueFactory<Pack, String>(f.getName()));
@@ -131,7 +125,74 @@ public class MainController {
             }
         }
 
-        loadPacks();
+        settings.loadCachedSongs(this);
+
+        if(packList.size() == 0) {
+            loadPacks();
+        }
+    }
+
+    @FXML
+    public void changeSongsDir(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showSaveDialog(null);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+            File yourFolder = chooser.getSelectedFile();
+            settings.setSongsFolder(yourFolder.getAbsolutePath());
+            updateExistingPacks();
+        }
+    }
+
+    @FXML
+    public void saveList(){
+        FileChooser fc = settings.makeSMLFileChooser();
+        fc.setTitle("Select where to save the DLM list");
+
+        File file = fc.showSaveDialog(progress.getScene().getWindow());
+
+        if(file != null) {
+            settings.setLastSmlDir(file.getParent());
+
+            try {
+                FileWriter fw = new FileWriter(file);
+                FilteredList<Pack> checked = new FilteredList<Pack>(packList, Pack::isDownload);
+                for (Pack pack : checked) {
+                    fw.write(pack.getName() + "\n");
+                }
+
+                fw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    public void loadList(){
+        FileChooser chooser = settings.makeSMLFileChooser();
+        chooser.setTitle("Select the DLM list to load");
+
+        File file = chooser.showOpenDialog(progress.getScene().getWindow());
+        try {
+            FileReader reader = new FileReader(file);
+            BufferedReader fr = new BufferedReader(reader);
+
+            String line;
+            while ((line = fr.readLine()) != null) {
+                for (Pack p : packList) {
+                    if(line.equals(p.getName())) {
+                        p.setDownload(true);
+                    }
+                }
+
+            }
+
+            fr.close();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -149,14 +210,26 @@ public class MainController {
             Platform.runLater(() -> {
                 progress.setPrefHeight(0);
             });
+
+            settings.updateSongsCache(this);
         }).start();
 
     }
 
+    @FXML
     public void updateExistingPacks(){
         packFilter.setText("");
         for (Pack pack : packList) {
             pack.setDownload(pack.getExists());
+        }
+    }
+
+    @FXML
+    public void deselectAll()
+    {
+        packFilter.setText("");
+        for (Pack pack : packList) {
+            pack.setDownload(false);
         }
     }
 
@@ -207,7 +280,7 @@ public class MainController {
                 if(n == JOptionPane.YES_OPTION) {
                     for (PackRow pd : packDownloaders) {
                         setWorking(true);
-                        pd.start();
+                        pd.start(this);
                     }
                 }
             }).start();
@@ -215,35 +288,31 @@ public class MainController {
     }
 
     private void cleanDownloaders(){
+        List<PackRow> toRemove = new ArrayList<PackRow>();
         for (PackRow p : packDownloaders) {
             PackRow pd = (PackRow)p;
-            if(pd.getStatus() == DONE){
-                packDownloaders.remove(p);
+            if(!pd.isWorking()){
+                toRemove.add(p);
             }
         }
+
+        packDownloaders.removeAll(toRemove);
     }
 
     public void setWorking(boolean b){
         for (PackRow pd : packDownloaders) {
-            switch (pd.getStatus()){
-                case DONE:
-                case PENDING:
-                case FAILED:
-                    break;
-                default:
-                    return;
+            if(pd.isWorking()) {
+                return;
             }
         }
 
         working = b;
-//        applyPacksButton.setEnabled(!b);
-//        applyPacksButton.setText(b?
-//                "Working ...":
-//                "Apply packs");
-//
-//        resetButton.setEnabled(!b);
-//        //updateMenuItem.setEnabled(!b);
-//        clearButton.setEnabled(!b);
+
+        for (Node node : menu.getChildren()) {
+            if(node instanceof Button) {
+                node.setDisable(b);
+            }
+        }
 
         if(!b){
             JOptionPane.showMessageDialog(null, "Applying done!", "Done", JOptionPane.INFORMATION_MESSAGE);
@@ -253,8 +322,6 @@ public class MainController {
     public static Settings getSettings(){
         return settings;
     }
-
-
 
     @FXML
     public void close()

@@ -39,6 +39,17 @@ public class PackRow {
         this.label = label;
     }
 
+    public boolean isWorking() {
+        switch (status) {
+            case DONE:
+            case FAILED:
+            case PENDING:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     public enum Status {
         PENDING("Pending"),
         STARTED("Started"),
@@ -131,7 +142,7 @@ public class PackRow {
         pack.deletePack();
     }
 
-    public void start(){
+    public void start(MainController mainController){
         new Thread(() -> {
             setStatus(Status.STARTED);
 
@@ -146,6 +157,8 @@ public class PackRow {
 
             getBar().setProgress(1);
             setStatus(Status.DONE);
+
+            mainController.setWorking(false);
         }).start();
     }
 

@@ -1,9 +1,7 @@
 package com.electromuis.smdl.provider;
 
 import com.electromuis.smdl.MainController;
-import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import com.electromuis.smdl.Processing.PackRow;
 
 import java.io.File;
@@ -16,6 +14,16 @@ import java.io.InputStream;
  */
 public abstract class DefaultProvider implements PackProvider {
     private static int BUFFER_SIZE = 2048;
+    String name;
+
+    public DefaultProvider(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
     public String downloadFile(PackRow downloader, InputStream inputStream, Pack p) throws IOException {
         String saveFilePath = MainController.getSettings().getSongsFolder() + File.separator + p.getFileName();
@@ -33,7 +41,6 @@ public abstract class DefaultProvider implements PackProvider {
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 readAmmount += bytesRead;
                 outputStream.write(buffer, 0, bytesRead);
-
 
                 float progress = ((float)readAmmount) / p.getContentLength();
                 if(downloader.getBar() != null) {

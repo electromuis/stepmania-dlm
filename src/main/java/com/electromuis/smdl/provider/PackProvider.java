@@ -1,7 +1,6 @@
 package com.electromuis.smdl.provider;
 
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import com.electromuis.smdl.Processing.PackRow;
 
 import java.io.IOException;
@@ -16,4 +15,6 @@ public interface PackProvider {
     public String download(Pack p, PackRow pd) throws IOException;
 
     public void disconnect() throws IOException;
+
+    public String getName();
 }

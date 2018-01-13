@@ -1,8 +1,6 @@
 package com.electromuis.smdl.provider;
 
-import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -51,7 +49,8 @@ public class FtpProvider extends DefaultProvider {
         return client;
     }
 
-    public FtpProvider(WebDavProvider.Config config) {
+    public FtpProvider(String name, WebDavProvider.Config config) {
+        super(name);
         this.config = config;
     }
 

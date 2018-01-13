@@ -1,8 +1,6 @@
 package com.electromuis.smdl.provider;
 
-import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
@@ -21,7 +19,8 @@ public class WebDavProvider extends DefaultProvider {
     private Config config;
     private Sardine client = null;
 
-    public WebDavProvider(Config config) {
+    public WebDavProvider(String name, Config config) {
+        super("name");
         this.config = config;
     }
 

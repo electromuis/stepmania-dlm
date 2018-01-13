@@ -16,20 +16,19 @@ import java.util.concurrent.Callable;
 public class ProviderLoading {
     private PackProvider[] providers = {
             //new MockProvider(),
-            new WebDavProvider(new DefaultProvider.Config(
+            new WebDavProvider("stack", new DefaultProvider.Config(
                     "https://debreker.stackstorage.com",
                     "electromuis",
                     "Falkensteiner12",
                     "/remote.php/webdav/Songs"
             )),
-            new HttpProvider(new HttpProvider.Config(
+            new HttpProvider("smonline", new HttpProvider.Config(
                     "http://stepmaniaonline.net/index.php?page=downloads",
                     "div.block:has(div.blocktitle:contains(Songs)) tr"
             ) {
                 @Override
                 public List<Pack> convertPacks(Elements packElements, HttpProvider provider) {
                     List<Pack> packsList = new ArrayList<>();
-
 
                     for (Element e : packElements){
                         Elements info = e.select("td");

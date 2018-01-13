@@ -12,11 +12,13 @@ import java.io.File;
  * Created by electromuis on 12.05.16.
  */
 public class Main extends Application {
+    public static Scene scene;
 
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/layout.fxml"));
         Scene scene = new Scene(root);
+        Main.scene = scene;
         scene.getStylesheets().add(getClass().getResource("/fxml/layout.css").toExternalForm());
         stage.setTitle("Stepmania DLM");
         stage.setScene(scene);

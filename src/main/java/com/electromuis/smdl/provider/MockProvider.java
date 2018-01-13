@@ -1,7 +1,6 @@
 package com.electromuis.smdl.provider;
 
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import com.electromuis.smdl.Processing.PackRow;
 
 import java.io.IOException;
@@ -43,5 +42,10 @@ public class MockProvider implements PackProvider {
     @Override
     public void disconnect() throws IOException {
 
+    }
+
+    @Override
+    public String getName() {
+        return "dummy";
     }
 }

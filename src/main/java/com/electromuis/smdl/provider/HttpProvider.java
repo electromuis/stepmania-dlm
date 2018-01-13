@@ -1,8 +1,6 @@
 package com.electromuis.smdl.provider;
 
-import com.electromuis.smdl.MainForm;
 import com.electromuis.smdl.Pack;
-import com.electromuis.smdl.Processing.PackDownloader;
 import org.apache.http.HttpException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,29 +24,21 @@ public class HttpProvider extends DefaultProvider {
 
     private Config config;
 
-    public HttpProvider(Config config) {
+    public HttpProvider(String name, Config config) {
+        super(name);
         this.config = config;
     }
 
     public List<Pack> getPacks() throws IOException {
-        //Document doc = Jsoup.connect("http://stepmaniaonline.net/index.php?page=downloads").get();
-        Document doc = Jsoup.connect(config.getEndpoint()).get();
-        //Elements packs = doc.select("div.block:has(div.blocktitle:contains(Songs)) tr");
+
+        Document doc = Jsoup.connect(config.getEndpoint()).maxBodySize(0).get();
+        //System.out.println(doc.html());
+        //Document doc = Jsoup.parse(new File("C:\\Users\\Electromuis\\Downloads\\Stepmania Online.html"), "UTF-8");
+
         Elements packs = doc.select(config.getPattern());
 
 
         List<Pack> packsList = config.convertPacks(packs, this);
-
-
-//        for (Element e : packs){
-//            Elements info = e.select("td");
-//            if(info.size() > 2 && !info.get(0).text().trim().equals(""))
-//                packsList.add(new HttpPack(info.get(0).text(),
-//                        info.get(1).text(),
-//                        info.get(2).text(),
-//                        "http://stepmaniaonline.net"+info.get(0).select("a").attr("href").replace(" ", "%20")
-//                ));
-//        }
 
         return packsList;
     }
@@ -91,10 +81,6 @@ public class HttpProvider extends DefaultProvider {
             return httpConn.getInputStream();
         } else
             throw new IOException("No 200 OK");
-    }
-
-    public boolean downloadPack(Pack p) {
-        return false;
     }
 
     public static abstract class Config {

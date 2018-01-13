@@ -1,7 +1,9 @@
 package com.electromuis.smdl;
 
+import javafx.stage.FileChooser;
 import org.apache.commons.io.FilenameUtils;
 import org.ini4j.Wini;
+import org.json.JSONArray;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -36,6 +38,26 @@ public class Settings {
     public String getSongsFolder() {
         return config.get("main", "song_folder");
     }
+    public File getLastSmlDir() {
+        String conf = config.get("main", "last_sml_dir");
+        if(conf == null) {
+            return null;
+        }
+        File file = new File(conf);
+        if(!file.exists()) {
+            return null;
+        }
+        return file;
+    }
+
+    public void setLastSmlDir(String dir) {
+        config.put("main", "last_sml_dir", dir);
+        try {
+            config.store();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setSongsFolder(String songsFolder) {
         config.put("main", "song_folder", songsFolder);
@@ -50,34 +72,15 @@ public class Settings {
         return null;
     }
 
-    public JFileChooser makeSMLFileChooser(){
-        JFileChooser chooser = new JFileChooser();
+    public FileChooser makeSMLFileChooser(){
+        FileChooser fc = new FileChooser();
 
-        chooser.setFileView(new FileView() {
-            @Override
-            public Icon getIcon(File f) {
-                if (FilenameUtils.getExtension(f.getName()).equals("sml"))
-                    return Settings.this.getIconSmall();
-                else
-                    return super.getIcon(f);
-            }
-        });
-        chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.addChoosableFileFilter(new SMLFileFilter());
-        chooser.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return true;
-            }
+        fc.setInitialDirectory(getLastSmlDir());
+        fc.setTitle("Select where to save the DLM list");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("SM DLM files (*.sml)", "*.sml"));
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files", "*"));
 
-            @Override
-            public String getDescription() {
-                return "All files";
-            }
-        });
-
-        return chooser;
+        return fc;
     }
 
     public void setLastPacks(Map<String, Pack> packs){
@@ -141,6 +144,45 @@ public class Settings {
         if(returnVal == JFileChooser.APPROVE_OPTION) {
             File yourFolder = chooser.getSelectedFile();
             setSongsFolder(yourFolder.getAbsolutePath());
+        }
+    }
+
+    public void loadCachedSongs(MainController controller)
+    {
+        String json = config.get("main", "songCache");
+        if(json == null || json.equals("")) {
+            System.out.println("Loading cache failed 1");
+            return;
+        }
+
+        JSONArray array = new JSONArray(json);
+
+        if(array.length() > 0) {
+            controller.packList.clear();
+            for(int i = 0; i < array.length(); i++) {
+                Pack p = Pack.fromJson(array.getJSONObject(i), controller.loader);
+                if(p == null) {
+                    continue;
+                }
+                controller.packList.add(p);
+            }
+
+            controller.updateExistingPacks();
+        }
+    }
+
+    public void updateSongsCache(MainController controller)
+    {
+        JSONArray array = new JSONArray();
+        for (Pack pack : controller.packList) {
+            array.put(pack.toJson());
+        }
+
+        config.put("main", "songCache", array.toString());
+        try {
+            config.store();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

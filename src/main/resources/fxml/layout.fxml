@@ -18,7 +18,7 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electromuis.smdl.MainController">
    <top>
-      <HBox id="menu" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="200.0" stylesheets="@layout.css" BorderPane.alignment="CENTER">
+      <HBox id="menu" fx:id="menu" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="200.0" stylesheets="@layout.css" BorderPane.alignment="CENTER">
          <children>
             <ImageView fitHeight="39.0" fitWidth="91.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -26,12 +26,14 @@
                </image>
             </ImageView>
             <Label text="Stepmania dlm" />
-            <Button mnemonicParsing="false" text="Save list" />
-            <Button mnemonicParsing="false" text="Load list" />
-            <Button mnemonicParsing="false" text="Change song folder" />
-            <Button mnemonicParsing="false" onAction="#close" text="Close" />
-            <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#loadPacks" text="Sync packs" />
+            <Button mnemonicParsing="false" onMouseClicked="#saveList" text="Save list" />
+            <Button mnemonicParsing="false" onMouseClicked="#loadList" text="Load list" />
+            <Button mnemonicParsing="false" onMouseClicked="#changeSongsDir" text="Change song folder" />
+            <Button mnemonicParsing="false" onMouseClicked="#deselectAll" text="Deselect all" />
+            <Button mnemonicParsing="false" onMouseClicked="#updateExistingPacks" text="Reset" />
+            <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#loadPacks" text="Reload pack cache" />
             <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#applyPacks" text="Apply packs" />
+            <Button mnemonicParsing="false" onAction="#close" text="Close" />
          </children>
       </HBox>
    </top>

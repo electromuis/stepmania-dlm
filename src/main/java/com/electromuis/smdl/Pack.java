@@ -2,19 +2,18 @@ package com.electromuis.smdl;
 
 import com.electromuis.smdl.Processing.PackRow;
 import com.electromuis.smdl.Processing.PackRowView;
-import com.electromuis.smdl.provider.FtpProvider;
-import com.electromuis.smdl.provider.HttpProvider;
-import com.electromuis.smdl.provider.PackProvider;
-import com.electromuis.smdl.provider.WebDavProvider;
+import com.electromuis.smdl.provider.*;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import org.apache.commons.io.FilenameUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.security.Provider;
 import java.text.DecimalFormat;
 import java.util.Comparator;
 
@@ -179,5 +178,47 @@ public class Pack {
 
             return o1.getName().compareTo(o2.getName());
         }
+    }
+
+    public static Pack fromJson(JSONObject json, ProviderLoading loader)
+    {
+        PackProvider provider = null;
+        String loaderName = json.getString("loader");
+        for (PackProvider packProvider : loader.getProviders()) {
+            if(packProvider.getName().endsWith(loaderName)) {
+                provider = packProvider;
+                break;
+            }
+        }
+
+        if(provider == null) {
+            return null;
+        }
+
+        Pack p = new Pack(
+            provider,
+            json.getString("name"),
+            json.getString("size"),
+            json.getString("type"),
+            json.getString("url"),
+            json.getString("filename"),
+            json.getLong("contentLength")
+        );
+
+        return p;
+    }
+
+    public JSONObject toJson() {
+        JSONObject json = new JSONObject();
+
+        json.put("loader", this.provider.getName());
+        json.put("name", name);
+        json.put("size", size);
+        json.put("type", type);
+        json.put("url", url);
+        json.put("filename", fileName);
+        json.put("contentLength", contentLength);
+
+        return json;
     }
 }
