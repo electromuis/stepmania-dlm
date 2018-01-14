@@ -23,11 +23,9 @@ public class MockProvider implements PackProvider {
     }
 
     @Override
-    public String download(Pack p, PackRow pd) throws IOException {
+    public boolean download(Pack p, PackRow pd) throws IOException {
         for (int i = 0; i < 101; i++) {
-            if(pd.getBar() != null) {
-                pd.getBar().setProgress((float)i / 100);
-            }
+            pd.setProgress((float)i / 100);
 
             try {
                 Thread.sleep(20);
@@ -36,7 +34,7 @@ public class MockProvider implements PackProvider {
             }
         }
 
-        return null;
+        return true;
     }
 
     @Override

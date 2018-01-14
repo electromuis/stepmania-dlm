@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electromuis.smdl.MainController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="807.0" prefWidth="1160.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.electromuis.smdl.MainController">
    <top>
       <HBox id="menu" fx:id="menu" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="200.0" stylesheets="@layout.css" BorderPane.alignment="CENTER">
          <children>
@@ -32,8 +32,8 @@
             <Button mnemonicParsing="false" onMouseClicked="#deselectAll" text="Deselect all" />
             <Button mnemonicParsing="false" onMouseClicked="#updateExistingPacks" text="Reset" />
             <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#loadPacks" text="Reload pack cache" />
-            <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#applyPacks" text="Apply packs" />
             <Button mnemonicParsing="false" onAction="#close" text="Close" />
+            <Button layoutX="339.0" layoutY="20.0" mnemonicParsing="false" onMouseClicked="#applyPacks" styleClass="orangeButton" text="Apply packs" />
          </children>
       </HBox>
    </top>

@@ -9,10 +9,12 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**Button
  * Created by electromuis on 12.05.16.
@@ -149,25 +151,30 @@ public class Settings {
 
     public void loadCachedSongs(MainController controller)
     {
-        String json = config.get("main", "songCache");
-        if(json == null || json.equals("")) {
-            System.out.println("Loading cache failed 1");
-            return;
-        }
-
-        JSONArray array = new JSONArray(json);
-
-        if(array.length() > 0) {
-            controller.packList.clear();
-            for(int i = 0; i < array.length(); i++) {
-                Pack p = Pack.fromJson(array.getJSONObject(i), controller.loader);
-                if(p == null) {
-                    continue;
-                }
-                controller.packList.add(p);
+        try {
+            String json = config.get("main", "songCache");
+            json = decompress(json);
+            if (json == null || json.equals("")) {
+                System.out.println("Loading cache failed 1");
+                return;
             }
 
-            controller.updateExistingPacks();
+            JSONArray array = new JSONArray(json);
+
+            if (array.length() > 0) {
+                controller.packList.clear();
+                for (int i = 0; i < array.length(); i++) {
+                    Pack p = Pack.fromJson(array.getJSONObject(i), controller.loader);
+                    if (p == null) {
+                        continue;
+                    }
+                    controller.packList.add(p);
+                }
+
+                controller.updateExistingPacks();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -178,11 +185,44 @@ public class Settings {
             array.put(pack.toJson());
         }
 
-        config.put("main", "songCache", array.toString());
         try {
+            String data = compress(array.toString());
+
+            config.put("main", "songCache", data);
             config.store();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String compress(String data) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(data.length());
+        GZIPOutputStream gzip = new GZIPOutputStream(bos);
+        gzip.write(data.getBytes());
+        gzip.close();
+        byte[] compressed = bos.toByteArray();
+        bos.close();
+        return Base64.getEncoder().encodeToString(compressed);
+    }
+
+    public static String decompress(String data) throws IOException {
+        if(data == null) {
+            return null;
+        }
+
+        byte[] bytes = java.util.Base64.getDecoder().decode(data);
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        GZIPInputStream gis = new GZIPInputStream(bis);
+        BufferedReader br = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while((line = br.readLine()) != null) {
+            sb.append(line);
+        }
+        br.close();
+        gis.close();
+        bis.close();
+        return sb.toString();
     }
 }

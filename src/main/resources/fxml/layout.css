@@ -22,7 +22,7 @@
 }
 
 #availablePacks .label, #downloadPacks .label {
-    -fx-font-size: 17pt;
+    -fx-font-size: 14pt;
     -fx-text-fill: #39abab;
     -fx-padding: 0 0 10 0;
 }
@@ -83,4 +83,8 @@
      -fx-background-color: #7BFF6E;
      -fx-background-insets: 0, 0, 0, 0;
      -fx-background-radius: 0, 0, 0, 0;
+}
+
+.orangeButton {
+    -fx-background-color: #FFCD02;
 }

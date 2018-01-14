@@ -1,5 +1,6 @@
 package com.electromuis.smdl;
 
+import com.electromuis.smdl.Processing.Extractor;
 import com.electromuis.smdl.Processing.PackRow;
 import com.electromuis.smdl.Processing.PackRowView;
 import com.electromuis.smdl.provider.*;
@@ -67,7 +68,7 @@ public class Pack {
     }
 
 
-    public String download(PackRow downloader) throws IOException {
+    public boolean download(PackRow downloader) throws IOException, Extractor.ExtractionException {
         return provider.download(this, downloader);
     }
 
@@ -210,6 +211,10 @@ public class Pack {
 
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
+
+        if(url == null) {
+            url = "empty";
+        }
 
         json.put("loader", this.provider.getName());
         json.put("name", name);

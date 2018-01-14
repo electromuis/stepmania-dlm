@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * Created by Electromuis on 15-5-2016.
  */
 public class Extractor {
-    static class ExtractionException extends Exception {
+    public static class ExtractionException extends Exception {
         private static final long serialVersionUID = -5108931481040742838L;
 
         ExtractionException(String msg) {
@@ -58,7 +58,7 @@ public class Extractor {
             this.isFolder = (Boolean) inArchive.getProperty(index,
                     PropID.IS_FOLDER);
 
-            packDownloader.getBar().setProgress(((float)index) / inArchive.getNumberOfItems());
+            packDownloader.setProgress(((float)index) / inArchive.getNumberOfItems());
 
             if (extractAskMode != ExtractAskMode.EXTRACT) {
                 // Skipped files or files being tested
@@ -155,13 +155,13 @@ public class Extractor {
     private File outputDirectoryFile;
     private PackRow packDownloader;
 
-    Extractor(String archive, String outputDirectory, PackRow packDownloader) {
+    public Extractor(String archive, String outputDirectory, PackRow packDownloader) {
         this.archive = archive;
         this.outputDirectory = outputDirectory;
         this.packDownloader = packDownloader;
     }
 
-    void extract() throws ExtractionException {
+    public void extract() throws ExtractionException {
         checkArchiveFile();
         prepareOutputDirectory();
         extractArchive();

@@ -95,8 +95,6 @@ public class MainController {
         SortedList<Pack> sortedPacks = new SortedList<>(filteredPacks);
         sortedPacks.comparatorProperty().bind(packsTable.comparatorProperty());
         packsTable.setItems(sortedPacks);
-
-        ObservableList columns = packsTable.getColumns();
         packsTable.setEditable(true);
 
         for(Field f : Pack.class.getDeclaredFields()) {
@@ -124,6 +122,12 @@ public class MainController {
 
             }
         }
+
+        ((TableColumn)packsTable.getColumns().get(0)).setPrefWidth(220);
+        ((TableColumn)packsTable.getColumns().get(1)).setPrefWidth(130);
+        ((TableColumn)packsTable.getColumns().get(2)).setPrefWidth(130);
+        ((TableColumn)packsTable.getColumns().get(3)).setPrefWidth(50);
+
 
         settings.loadCachedSongs(this);
 
@@ -209,6 +213,10 @@ public class MainController {
 
             Platform.runLater(() -> {
                 progress.setPrefHeight(0);
+            });
+
+            packList.sort((o1, o2) -> {
+                return o1.getName().compareTo(o2.getName());
             });
 
             settings.updateSongsCache(this);

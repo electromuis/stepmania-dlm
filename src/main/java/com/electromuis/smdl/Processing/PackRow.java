@@ -53,6 +53,7 @@ public class PackRow {
     public enum Status {
         PENDING("Pending"),
         STARTED("Started"),
+        RETRIEVING("Fetching info"),
         DELETING("Deleting"),
         DOWNLOADING("Downloading"),
         EXTRACTING("Extracting"),
@@ -96,10 +97,6 @@ public class PackRow {
         });
     }
 
-    public ProgressBar getBar() {
-        return bar;
-    }
-
     public void setBar(ProgressBar bar) {
         this.bar = bar;
     }
@@ -114,23 +111,14 @@ public class PackRow {
 
     protected void startDownload(){
         try {
-            String archive = pack.download(this);
+            boolean success = pack.download(this);
 
-            if (archive != null) {
-                setStatus(Status.EXTRACTING);
-
-                String targetDir = MainController.getSettings().getSongsFolder() + File.separator + pack.getName();
-                Extractor extractor = new Extractor(archive, targetDir, PackRow.this);
-                extractor.extract();
-
-                new File(archive).delete();
-
-            } else {
+            if (!success) {
                 setStatus(Status.FAILED);
                 System.out.println("Download failed");
                 JOptionPane.showMessageDialog(null, "There was an error downloading the pack", "Download error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (IOException | Extractor.ExtractionException e) {
+        } catch (Exception e) {
             setStatus(Status.FAILED);
             JOptionPane.showMessageDialog(null, "There was an error installing the pack", "Download error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -155,11 +143,17 @@ public class PackRow {
                     break;
             }
 
-            getBar().setProgress(1);
+            setProgress(1);
             setStatus(Status.DONE);
 
             mainController.setWorking(false);
         }).start();
+    }
+
+    public void setProgress(float progress){
+        Platform.runLater(() -> {
+            bar.setProgress(progress);
+        });
     }
 
     public Pack getPack() {
