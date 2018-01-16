@@ -44,45 +44,50 @@ public class DropboxProvider implements PackProvider {
         return client;
     }
 
-    public void downloadFolder(String path, String target, PackRow pr) throws DbxException, IOException {
-        pr.setStatus(PackRow.Status.RETRIEVING);
-        List<DbxFile> dbxFiles = listFiles(path, true, null);
-        float progressPt = 1 / dbxFiles.size();
+    public void downloadFolder(String path, String target, PackRow pr) throws IOException, DbxException {
+        try {
+            pr.setStatus(PackRow.Status.RETRIEVING);
+            List<DbxFile> dbxFiles = listFiles(path, true, null, 0, pr::setProgress);
+            float progressPt = 1 / dbxFiles.size();
 
-        pr.setStatus(PackRow.Status.DOWNLOADING);
-        for(int i = 0; i < dbxFiles.size(); i++) {
-            DbxFile dFile = dbxFiles.get(i);
-            float progress = i / dbxFiles.size();
-            String localPath = dFile.fullPath.substring(path.length());
-            localPath = target + File.separator + localPath;
+            pr.setStatus(PackRow.Status.DOWNLOADING);
+            for (int i = 0; i < dbxFiles.size(); i++) {
+                DbxFile dFile = dbxFiles.get(i);
+                float progress = (float) i / dbxFiles.size();
+                String localPath = dFile.fullPath.substring(path.length());
+                localPath = target + File.separator + localPath;
 
-            if(!localPath.isEmpty()) {
-                if(dFile.isFile) {
-                    GetSharedLinkFileBuilder builder = getClient()
-                            .sharing()
-                            .getSharedLinkFileBuilder(sharedFolder)
-                            .withPath(dFile.fullPath);
+                if (!localPath.isEmpty()) {
+                    if (dFile.isFile) {
+                        GetSharedLinkFileBuilder builder = getClient()
+                                .sharing()
+                                .getSharedLinkFileBuilder(sharedFolder)
+                                .withPath(dFile.fullPath);
 
-                    DbxDownloader<SharedLinkMetadata> meta = builder.start();
+                        DbxDownloader<SharedLinkMetadata> meta = builder.start();
 
-                    FileOutputStream outputStream = new FileOutputStream(localPath);
-                    meta.download(outputStream);
-                    outputStream.close();
+                        FileOutputStream outputStream = new FileOutputStream(localPath);
+                        meta.download(outputStream);
+                        outputStream.close();
 
-                } else {
-                    new File(localPath).mkdirs();
+                    } else {
+                        new File(localPath).mkdirs();
+                    }
+
+                    pr.setProgress(progress);
                 }
-
-                pr.setProgress(progress);
             }
+        } catch (Exception e) {
+            pr.pack.deletePack();
+            throw e;
         }
     }
 
     protected List<DbxFile> listFiles(String path) throws DbxException {
-        return listFiles(path, false, null);
+        return listFiles(path, false, null ,0, null);
     }
 
-    protected List<DbxFile> listFiles(String path, boolean recursive, List<DbxFile> files) throws DbxException {
+    protected List<DbxFile> listFiles(String path, boolean recursive, List<DbxFile> files, int level, ListingProgression progression) throws DbxException {
         if (path == null) {
             path = "";
         }
@@ -97,12 +102,19 @@ public class DropboxProvider implements PackProvider {
                 listFolderBuilder(path)
                 .withSharedLink(new SharedLink(sharedFolder));
 
-        for (Metadata file : listFolderBuilder.start().getEntries()) {
+        List<Metadata> entries = listFolderBuilder.start().getEntries();
+        for(int i = 0; i < entries.size(); i ++) {
+            Metadata file = entries.get(i);
+
             DbxFile dbxFile = new DbxFile(file, path);
             files.add(dbxFile);
 
             if(dbxFile.isFile == false && recursive) {
-                listFiles(dbxFile.fullPath, recursive, files);
+                listFiles(dbxFile.fullPath, recursive, files, level + 1, null);
+            }
+
+            if(level == 0 && progression != null) {
+                progression.setProgress((float)i / entries.size());
             }
         }
 
@@ -185,5 +197,9 @@ public class DropboxProvider implements PackProvider {
             this.isFile = (meta instanceof FileMetadata);
             fullPath = path + "/" + name;
         }
+    }
+
+    public static interface ListingProgression {
+        public void setProgress(float progress);
     }
 }

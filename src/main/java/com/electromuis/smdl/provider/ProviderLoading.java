@@ -27,7 +27,18 @@ public class ProviderLoading {
         "p8GYYaqbiAAAAAAAAAALXuysZ-EiSSxAzqe8acMzvl2LqlHOifrGvP-kzunsrrzB",
     "https://www.dropbox.com/sh/o9t6z8n3gdmg6sz/cuV7Kaurg-",
                 new DropboxProvider.PackFolder[]{
-                    new DropboxProvider.PackFolder("/Albumix", "Dropbox")
+                    new DropboxProvider.PackFolder("/Albumix", "Albumix"),
+                    new DropboxProvider.PackFolder("/DDR Officials", "DDR Officials"),
+                    new DropboxProvider.PackFolder("/DDR4EVER", "DDR4EVER"),
+                    new DropboxProvider.PackFolder("/DDRei", "DDRei"),
+                    new DropboxProvider.PackFolder("/DDRExtreme.co.uk", "DDRExtreme.co.uk"),
+                    new DropboxProvider.PackFolder("/DWI Extreme", "DWI Extreme"),
+                    new DropboxProvider.PackFolder("/Otaku's Dream", "Otaku's Dream"),
+                    new DropboxProvider.PackFolder("/R21", "R21"),
+                    new DropboxProvider.PackFolder("/Stepmania (Pad)", "Stepmania (Pad)"),
+                    new DropboxProvider.PackFolder("/DDRei", "Mods (SM5)"),
+                    new DropboxProvider.PackFolder("/Stepmix", "Stepmix"),
+                    new DropboxProvider.PackFolder("/DDRei", "Pad"),
                 }
             ),
 //            new HttpProvider("smonline", new HttpProvider.Config(

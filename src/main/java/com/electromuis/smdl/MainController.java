@@ -3,7 +3,6 @@ package com.electromuis.smdl;
 import com.electromuis.smdl.Processing.PackRow;
 import com.electromuis.smdl.Processing.PackRowView;
 import com.electromuis.smdl.provider.ProviderLoading;
-import com.sun.xml.internal.ws.util.StringUtils;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -20,6 +19,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.io.*;

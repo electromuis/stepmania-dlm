@@ -59,6 +59,8 @@ public class PackRowView extends ListCell<PackRow> {
     }
 
     void setProgress(float f) {
-        progress.setProgress(f);
+        if(progress != null) {
+            progress.setProgress(f);
+        }
     }
 }
