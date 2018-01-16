@@ -28,6 +28,7 @@ public class Pack {
     private String size;
     @FXML
     private String type;
+    private String date;
     private String url;
     private String fileName;
     @FXML
@@ -134,6 +135,14 @@ public class Pack {
 
     public boolean getExists(){
         return getFolder().exists();
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     private File getFolder(){

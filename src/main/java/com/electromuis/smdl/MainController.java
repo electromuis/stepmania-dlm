@@ -17,6 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
@@ -35,9 +36,6 @@ import static com.electromuis.smdl.Processing.PackRow.Command.*;
  */
 public class MainController {
     @FXML
-    ProgressBar progress;
-
-    @FXML
     HBox menu;
 
     @FXML
@@ -46,6 +44,15 @@ public class MainController {
 
     @FXML
     TextField packFilter;
+
+    @FXML
+    public StackPane progressContainer;
+
+    @FXML
+    public ProgressBar progress;
+
+    @FXML
+    public Label progressLabel;
 
     @FXML
     TableView packsTable;
@@ -204,15 +211,17 @@ public class MainController {
     {
         packList.clear();
         progress.setProgress(0);
-        progress.setPrefHeight(30);
+        progressContainer.setPrefHeight(30);
 
         new Thread(() -> {
-            Pack[] packs = loader.getPacks(progress);
+            setWorking(true);
+            Pack[] packs = loader.getPacks(this);
             packList.addAll(packs);
             updateExistingPacks();
 
             Platform.runLater(() -> {
-                progress.setPrefHeight(0);
+                progress.setProgress(0);
+                progressLabel.setText("Loaded " + packList.size() + " packs");
             });
 
             packList.sort((o1, o2) -> {
@@ -220,6 +229,7 @@ public class MainController {
             });
 
             settings.updateSongsCache(this);
+            setWorking(false);
         }).start();
 
     }
@@ -307,10 +317,10 @@ public class MainController {
         packDownloaders.removeAll(toRemove);
     }
 
-    public void setWorking(boolean b){
+    public boolean setWorking(boolean b){
         for (PackRow pd : packDownloaders) {
             if(pd.isWorking()) {
-                return;
+                return false;
             }
         }
 
@@ -322,9 +332,7 @@ public class MainController {
             }
         }
 
-        if(!b){
-            JOptionPane.showMessageDialog(null, "Applying done!", "Done", JOptionPane.INFORMATION_MESSAGE);
-        }
+        return true;
     }
 
     public static Settings getSettings(){

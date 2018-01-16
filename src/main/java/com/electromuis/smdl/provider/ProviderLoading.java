@@ -1,6 +1,8 @@
 package com.electromuis.smdl.provider;
 
+import com.electromuis.smdl.MainController;
 import com.electromuis.smdl.Pack;
+import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -16,14 +18,37 @@ import java.util.concurrent.Callable;
 public class ProviderLoading {
     private PackProvider[] providers = {
             //new MockProvider(),
-//            new WebDavProvider("stack", new DefaultProvider.Config(
-//                    "https://debreker.stackstorage.com",
-//                    "electromuis",
-//                    "Falkensteiner12",
-//                    "/remote.php/webdav/Songs"
-//            )),
+            new WebDavProvider("DDR Exp Stack", new DefaultProvider.Config(
+                    "https://debreker.stackstorage.com",
+                    "electromuis",
+                    "Falkensteiner12",
+                    "/remote.php/webdav/Songs"
+            )),
+            new HttpProvider("Stepmania online", new HttpProvider.Config(
+                    "http://stepmaniaonline.net/index.php?page=downloads",
+                    "div.block:has(div.blocktitle:contains(Songs)) tr"
+            ) {
+                @Override
+                public List<Pack> convertPacks(Elements packElements, HttpProvider provider) {
+                    List<Pack> packsList = new ArrayList<>();
+
+                    for (Element e : packElements){
+                        Elements info = e.select("td");
+                        if(info.size() > 2 && !info.get(0).text().trim().equals("")) {
+                            packsList.add(new Pack(provider,
+                                    info.get(0).text(),
+                                    info.get(1).text(),
+                                    info.get(2).text(),
+                                    info.get(0).select("a").attr("href").replace(" ", "%20")
+                            ));
+                        }
+                    }
+
+                    return packsList;
+                }
+            }),
             new DropboxProvider(
-        "itgdropbox",
+        "ITG Dropbox",
         "p8GYYaqbiAAAAAAAAAALXuysZ-EiSSxAzqe8acMzvl2LqlHOifrGvP-kzunsrrzB",
     "https://www.dropbox.com/sh/o9t6z8n3gdmg6sz/cuV7Kaurg-",
                 new DropboxProvider.PackFolder[]{
@@ -40,30 +65,7 @@ public class ProviderLoading {
                     new DropboxProvider.PackFolder("/Stepmix", "Stepmix"),
                     new DropboxProvider.PackFolder("/DDRei", "Pad"),
                 }
-            ),
-//            new HttpProvider("smonline", new HttpProvider.Config(
-//                    "http://stepmaniaonline.net/index.php?page=downloads",
-//                    "div.block:has(div.blocktitle:contains(Songs)) tr"
-//            ) {
-//                @Override
-//                public List<Pack> convertPacks(Elements packElements, HttpProvider provider) {
-//                    List<Pack> packsList = new ArrayList<>();
-//
-//                    for (Element e : packElements){
-//                        Elements info = e.select("td");
-//                        if(info.size() > 2 && !info.get(0).text().trim().equals("")) {
-//                            packsList.add(new Pack(provider,
-//                                    info.get(0).text(),
-//                                    info.get(1).text(),
-//                                    info.get(2).text(),
-//                                    info.get(0).select("a").attr("href").replace(" ", "%20")
-//                            ));
-//                        }
-//                    }
-//
-//                    return packsList;
-//                }
-//            })
+            )
     };
 
     public void disconnect(){
@@ -76,16 +78,22 @@ public class ProviderLoading {
         }
     }
 
-    public Pack[] getPacks(ProgressBar progress){
+    public Pack[] getPacks(MainController controller){
         Map<String, Pack> packs = new HashMap<>();
 
-        float i = 0;
+
         boolean error = false;
-        for(PackProvider pv : providers) {
-            i ++;
+
+        for(int i = 0; i < providers.length; i ++) {
+            PackProvider pv = providers[i];
+            int ni = i;
 
             System.out.println("Loading provider: " + pv.getClass().getName());
-            progress.setProgress(i / (providers.length + 1));
+
+            Platform.runLater(() -> {
+                controller.progress.setProgress((float)ni / (providers.length));
+                controller.progressLabel.setText("Loading " + pv.getName() + " " + (ni) + "/" + (providers.length));
+            });
 
             try {
                 for (Pack p : pv.getPacks())

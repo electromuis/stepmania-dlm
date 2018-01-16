@@ -85,6 +85,11 @@
      -fx-background-radius: 0, 0, 0, 0;
 }
 
-.orangeButton {
-    -fx-background-color: #FFCD02;
+#menu .orangeButton {
+    -fx-background-color: #FF7612;
+    -fx-text-fill: #000000;
+}
+
+#menu .orangeButton:pressed, #menu .orangeButton:hover {
+    -fx-background-color: #FFC542
 }

@@ -1,5 +1,6 @@
 package com.electromuis.smdl;
 
+import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import org.apache.commons.io.FilenameUtils;
 import org.ini4j.Wini;
@@ -170,6 +171,11 @@ public class Settings {
                     }
                     controller.packList.add(p);
                 }
+
+                Platform.runLater(() -> {
+                    controller.progressContainer.setPrefHeight(30);
+                    controller.progressLabel.setText(controller.packList.size() + " packs in cache");
+                });
 
                 controller.updateExistingPacks();
             }

@@ -146,7 +146,9 @@ public class PackRow {
             setProgress(1);
             setStatus(Status.DONE);
 
-            mainController.setWorking(false);
+            if(mainController.setWorking(false)) {
+                JOptionPane.showMessageDialog(null, "Applying done!", "Done", JOptionPane.INFORMATION_MESSAGE);
+            }
         }).start();
     }
 
