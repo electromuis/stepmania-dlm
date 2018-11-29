@@ -18,35 +18,12 @@ import java.util.concurrent.Callable;
 public class ProviderLoading {
     private PackProvider[] providers = {
             //new MockProvider(),
-//            new WebDavProvider("DDR Exp Stack", new DefaultProvider.Config(
-//                    "https://debreker.stackstorage.com",
-//                    "electromuis",
-//                    "Falkensteiner12",
-//                    "/remote.php/webdav/Songs"
-//            )),
-            new HttpProvider("Stepmania online", new HttpProvider.Config(
-                    "http://stepmaniaonline.net/index.php?page=downloads",
-                    "div.block:has(div.blocktitle:contains(Songs)) tr"
-            ) {
-                @Override
-                public List<Pack> convertPacks(Elements packElements, HttpProvider provider) {
-                    List<Pack> packsList = new ArrayList<>();
-
-                    for (Element e : packElements){
-                        Elements info = e.select("td");
-                        if(info.size() > 2 && !info.get(0).text().trim().equals("")) {
-                            packsList.add(new Pack(provider,
-                                    info.get(0).text(),
-                                    info.get(1).text(),
-                                    info.get(2).text(),
-                                    info.get(0).select("a").attr("href").replace(" ", "%20")
-                            ));
-                        }
-                    }
-
-                    return packsList;
-                }
-            }),
+            new WebDavProvider("DDR Exp", new DefaultProvider.Config(
+                    "http://nas.electromuis.nl:5005",
+                    "packapp",
+                    "3}]*wH",
+                    "/packs"
+            )),
             new DropboxProvider(
         "ITG Dropbox",
         "p8GYYaqbiAAAAAAAAAALXuysZ-EiSSxAzqe8acMzvl2LqlHOifrGvP-kzunsrrzB",
@@ -60,10 +37,9 @@ public class ProviderLoading {
                     new DropboxProvider.PackFolder("/DWI Extreme", "DWI Extreme"),
                     new DropboxProvider.PackFolder("/Otaku's Dream", "Otaku's Dream"),
                     new DropboxProvider.PackFolder("/R21", "R21"),
-                    new DropboxProvider.PackFolder("/Stepmania (Pad)", "Stepmania (Pad)"),
+                    new DropboxProvider.PackFolder("/Stepmania 3 (Pad)", "Stepmania 3 (Pad)"),
                     new DropboxProvider.PackFolder("/DDRei", "Mods (SM5)"),
-                    new DropboxProvider.PackFolder("/Stepmix", "Stepmix"),
-                    new DropboxProvider.PackFolder("/DDRei", "Pad"),
+                    new DropboxProvider.PackFolder("/Stepmix", "Stepmix")
                 }
             )
     };

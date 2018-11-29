@@ -117,54 +117,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>installer</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>javapackager</executable>
-
-                            <arguments>
-                                <argument>-deploy</argument>
-                                <argument>-native</argument>
-                                <argument>-outdir</argument>
-                                <argument>${app.installerdir}</argument>
-                                <argument>-outfile</argument>
-                                <argument>${app.filename}</argument>
-                                <argument>-srcdir</argument>
-                                <argument>${app.dir}</argument>
-                                <argument>-srcfiles</argument>
-                                <argument>fxlauncher.jar</argument>
-                                <argument>-appclass</argument>
-                                <argument>fxlauncher.Launcher</argument>
-                                <argument>-name</argument>
-                                <argument>${project.name}</argument>
-                                <argument>-title</argument>
-                                <argument>${project.name}</argument>
-                                <argument>-vendor</argument>
-                                <argument>${app.vendor}</argument>
-                                <argument>-BappVersion=${app.version}</argument>
-                                <argument>-Bidentifier=${project.groupId}.${project.artifactId}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <!-- Copy application artifacts to remote site using scp (optional) -->
-                    <execution>
-                        <id>deploy-app</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>scp</executable>
-                            <arguments>
-                                <argument>-r</argument>
-                                <argument>target/app/.</argument>
-                                <argument>${app.deploy.target}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -174,6 +126,58 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>1.7.24</version>
+                <executions>
+                    <execution>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <outfile>target/SM-DLM.exe</outfile>
+                            <jar>target/app/fxlauncher.jar</jar>
+                            <!-- if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> -->
+                            <dontWrapJar>false</dontWrapJar>
+                            <errTitle>Error in launch4j plugin</errTitle>
+                            <classPath>
+                                <mainClass>fxlauncher.Launcher</mainClass>
+                            </classPath>
+                            <icon>src/main/resources/images/icon.ico</icon>
+                            <jre>
+                                <minVersion>1.8.0</minVersion>
+                                <maxVersion></maxVersion>
+                                <initialHeapSize>512</initialHeapSize>
+                                <maxHeapSize>1024</maxHeapSize>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>${project.version}</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <fileDescription>des</fileDescription>
+                                <copyright>Copyright (c) 2018 </copyright>
+                                <companyName>${app.vendor}</companyName>
+                                <productVersion>${project.version}</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <productName>${app.filename}</productName>
+                                <internalName>${app.filename}</internalName>
+                                <originalFilename>SM-DLM.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>8.8.3</version>
+                <configuration>
+                    <mainClass>com.electromuis.smdl.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

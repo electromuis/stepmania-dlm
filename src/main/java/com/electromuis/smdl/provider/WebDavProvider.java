@@ -49,10 +49,7 @@ public class WebDavProvider extends DefaultProvider {
         for (DavResource group : getContent(root)) {
             for (DavResource pack : getContent(root + group.getName())) {
                 Map<String, String> customProps = pack.getCustomProps();
-                long size = 0;
-
-                if(customProps.containsKey("size"))
-                    size = Long.parseLong(customProps.get("size"));
+                long size = pack.getContentLength();
 
                 packs.add(new Pack(
                         this,

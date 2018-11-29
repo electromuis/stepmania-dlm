@@ -96,26 +96,30 @@ public class DropboxProvider implements PackProvider {
             files = new ArrayList<DbxFile>();
         }
 
-        ListFolderBuilder listFolderBuilder =
-                getClient().
-                files().
-                listFolderBuilder(path)
-                .withSharedLink(new SharedLink(sharedFolder));
+        try {
+            ListFolderBuilder listFolderBuilder =
+                    getClient().
+                            files().
+                            listFolderBuilder(path)
+                            .withSharedLink(new SharedLink(sharedFolder));
 
-        List<Metadata> entries = listFolderBuilder.start().getEntries();
-        for(int i = 0; i < entries.size(); i ++) {
-            Metadata file = entries.get(i);
+            List<Metadata> entries = listFolderBuilder.start().getEntries();
+            for (int i = 0; i < entries.size(); i++) {
+                Metadata file = entries.get(i);
 
-            DbxFile dbxFile = new DbxFile(file, path);
-            files.add(dbxFile);
+                DbxFile dbxFile = new DbxFile(file, path);
+                files.add(dbxFile);
 
-            if(dbxFile.isFile == false && recursive) {
-                listFiles(dbxFile.fullPath, recursive, files, level + 1, null);
+                if (dbxFile.isFile == false && recursive) {
+                    listFiles(dbxFile.fullPath, recursive, files, level + 1, null);
+                }
+
+                if (level == 0 && progression != null) {
+                    progression.setProgress((float) i / entries.size());
+                }
             }
-
-            if(level == 0 && progression != null) {
-                progression.setProgress((float)i / entries.size());
-            }
+        } catch (ListFolderErrorException exception) {
+            System.out.println(path + " not found");
         }
 
         return files;
