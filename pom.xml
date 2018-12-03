@@ -6,7 +6,7 @@
 
     <groupId>electromuis</groupId>
     <artifactId>smdownloadmanager</artifactId>
-    <version>3.0</version>
+    <version>3.1.0.0</version>
 
     <properties>
         <!-- Installer Filename without suffix -->
@@ -25,7 +25,7 @@
         <app.vendor>Electromuis</app.vendor>
 
         <!-- The Application version used by javapackager -->
-        <app.version>2.0</app.version>
+        <app.version>3.1</app.version>
 
         <!-- Base URL where you will host the application artifacts -->
         <app.url>http://dutchrhythm.com/dlm/</app.url>
@@ -100,7 +100,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <!-- Embed app.xml inside fxlauncher.xml so we don't need to reference app.xml to start the app -->
                     <execution>
                         <id>embed-manifest-in-launcher</id>
                         <phase>package</phase>

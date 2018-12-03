@@ -48,12 +48,11 @@ public class WebDavProvider extends DefaultProvider {
         String root="/";
         for (DavResource group : getContent(root)) {
             for (DavResource pack : getContent(root + group.getName())) {
-                Map<String, String> customProps = pack.getCustomProps();
                 long size = pack.getContentLength();
 
                 packs.add(new Pack(
                         this,
-                        root+group.getName()+"/"+pack.getName(),
+                        pack.getHref().toString(),
                         pack.getName(),
                         group.getName(),
                         size
@@ -73,14 +72,14 @@ public class WebDavProvider extends DefaultProvider {
 
         String ret = "/"+config.getRoot()+"/"+folder;
 
-        ret = ret.replace("//", "/").replace(" ", "%20");
+        ret = ret.replace("//", "/");
 
         return config.getEndpoint()+ret;
     }
 
     @Override
     public InputStream getInputStream(Pack p) throws IOException {
-        return getClient().get(getFilePath(p.getUrl()));
+        return getClient().get(config.getEndpoint() + p.getUrl());
     }
 
 
