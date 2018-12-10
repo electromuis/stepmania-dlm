@@ -6,7 +6,7 @@
 
     <groupId>electromuis</groupId>
     <artifactId>smdownloadmanager</artifactId>
-    <version>3.1.0.0</version>
+    <version>3.0.0.0</version>
 
     <properties>
         <!-- Installer Filename without suffix -->
@@ -16,7 +16,7 @@
         <app.mainClass>com.electromuis.smdl.Main</app.mainClass>
 
         <!-- Optional override to specify where the cached files are stored. Default is current working directory -->
-        <app.cacheDir></app.cacheDir>
+        <app.cacheDir>USERLIB/SM-DLM</app.cacheDir>
 
         <!-- Optional parameters to the application, will be embedded in the launcher and can be overriden on the command line -->
         <app.parameters></app.parameters>
@@ -25,7 +25,7 @@
         <app.vendor>Electromuis</app.vendor>
 
         <!-- The Application version used by javapackager -->
-        <app.version>3.1</app.version>
+        <app.version>3.0</app.version>
 
         <!-- Base URL where you will host the application artifacts -->
         <app.url>http://dutchrhythm.com/dlm/</app.url>

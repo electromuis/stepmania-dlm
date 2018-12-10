@@ -22,19 +22,45 @@ import java.util.zip.GZIPOutputStream;
  */
 public class Settings {
     private Wini config;
-    private File jsonConfig;
 
     public Settings(){
         try {
-            File f = new File("smdl.ini");
-            if(!f.exists())
+            File f = configPath();
+            if(!f.exists()) {
                 f.createNewFile();
-
-            jsonConfig = new File("smdl.json");
+            }
 
             config = new Wini(f);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public File configPath()
+    {
+        String path = null;
+
+        File f = new File("smdl.ini");
+        if(f.exists()) {
+            return f;
+        }
+
+        String OS = System.getProperty("os.name", "generic").toLowerCase();
+
+        if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+            path = System.getProperty("user.home")  + "/Library/Application Support/SM-DLM/";
+        } else if (OS.indexOf("win") >= 0) {
+            path = System.getProperty("user.home")  + "/AppData/Local/SM-DLM/";
+        } else {
+            path = System.getProperty("user.home") + "/.SM-DLM/";
+        }
+
+        File p = new File(path);
+        if(p.exists()) {
+            f = new File(path + "smdl.ini");
+            return f;
+        } else {
+            return f;
         }
     }
 
@@ -84,17 +110,6 @@ public class Settings {
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files", "*"));
 
         return fc;
-    }
-
-    public void setLastPacks(Map<String, Pack> packs){
-        try {
-            if(!jsonConfig.exists())
-                jsonConfig.createNewFile();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public ImageIcon getIcon(){
