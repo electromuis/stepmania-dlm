@@ -6,7 +6,7 @@
 
     <groupId>electromuis</groupId>
     <artifactId>smdownloadmanager</artifactId>
-    <version>3.1.0.0</version>
+    <version>3.1.0.2</version>
 
     <properties>
         <!-- Installer Filename without suffix -->
@@ -54,6 +54,12 @@
                 <version>2.6</version>
                 <configuration>
                     <outputDirectory>${app.dir}</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <!-- Copy dependencies to appdir -->
@@ -75,49 +81,49 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.codehaus.mojo</groupId>-->
-                <!--<artifactId>exec-maven-plugin</artifactId>-->
-                <!--<version>1.4.0</version>-->
-                <!--&lt;!&ndash; Generate app.xml manifest &ndash;&gt;-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>create-manifest</id>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>java</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<mainClass>fxlauncher.CreateManifest</mainClass>-->
-                            <!--<arguments>-->
-                                <!--<argument>${app.url}</argument>-->
-                                <!--<argument>${app.mainClass}</argument>-->
-                                <!--<argument>${app.dir}</argument>-->
-                                <!--<argument>&#45;&#45;cache-dir=${app.cacheDir}</argument>-->
-                                <!--<argument>&#45;&#45;accept-downgrade=${app.acceptDowngrade}</argument>-->
-                                <!--<argument>&#45;&#45;include-extensions=jpg</argument>-->
-                                <!--<argument>${app.parameters}</argument>-->
-                            <!--</arguments>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                    <!--<execution>-->
-                        <!--<id>embed-manifest-in-launcher</id>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>exec</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<executable>jar</executable>-->
-                            <!--<workingDirectory>${app.dir}</workingDirectory>-->
-                            <!--<arguments>-->
-                                <!--<argument>uf</argument>-->
-                                <!--<argument>fxlauncher.jar</argument>-->
-                                <!--<argument>app.xml</argument>-->
-                            <!--</arguments>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <!-- Generate app.xml manifest -->
+                <executions>
+                    <execution>
+                        <id>create-manifest</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>fxlauncher.CreateManifest</mainClass>
+                            <arguments>
+                                <argument>${app.url}</argument>
+                                <argument>${app.mainClass}</argument>
+                                <argument>${app.dir}</argument>
+                                <argument>--cache-dir=${app.cacheDir}</argument>
+                                <argument>--accept-downgrade=${app.acceptDowngrade}</argument>
+                                <argument>--include-extensions=jpg</argument>
+                                <argument>${app.parameters}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>embed-manifest-in-launcher</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jar</executable>
+                            <workingDirectory>${app.dir}</workingDirectory>
+                            <arguments>
+                                <argument>uf</argument>
+                                <argument>fxlauncher.jar</argument>
+                                <argument>app.xml</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -127,50 +133,50 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>1.7.24</version>
-                <executions>
-                    <execution>
-                        <id>l4j-gui</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                        <configuration>
-                            <headerType>gui</headerType>
-                            <outfile>target/SM-DLM.exe</outfile>
-                            <jar>target/app/fxlauncher.jar</jar>
-                            <!-- if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> -->
-                            <dontWrapJar>false</dontWrapJar>
-                            <errTitle>Error in launch4j plugin</errTitle>
-                            <classPath>
-                                <mainClass>fxlauncher.Launcher</mainClass>
-                            </classPath>
-                            <icon>src/main/resources/images/icon.ico</icon>
-                            <jre>
-                                <minVersion>1.8.0</minVersion>
-                                <maxVersion></maxVersion>
-                                <initialHeapSize>512</initialHeapSize>
-                                <maxHeapSize>1024</maxHeapSize>
-                            </jre>
-                            <versionInfo>
-                                <fileVersion>${project.version}</fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <fileDescription>des</fileDescription>
-                                <copyright>Copyright (c) 2018 </copyright>
-                                <companyName>${app.vendor}</companyName>
-                                <productVersion>${project.version}</productVersion>
-                                <txtProductVersion>${project.version}</txtProductVersion>
-                                <productName>${app.filename}</productName>
-                                <internalName>${app.filename}</internalName>
-                                <originalFilename>SM-DLM.exe</originalFilename>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>com.akathist.maven.plugins.launch4j</groupId>-->
+                <!--<artifactId>launch4j-maven-plugin</artifactId>-->
+                <!--<version>1.7.24</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>l4j-gui</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>launch4j</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<headerType>gui</headerType>-->
+                            <!--<outfile>target/SM-DLM.exe</outfile>-->
+                            <!--<jar>target/app/fxlauncher.jar</jar>-->
+                            <!--&lt;!&ndash; if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> &ndash;&gt;-->
+                            <!--<dontWrapJar>false</dontWrapJar>-->
+                            <!--<errTitle>Error in launch4j plugin</errTitle>-->
+                            <!--<classPath>-->
+                                <!--<mainClass>fxlauncher.Launcher</mainClass>-->
+                            <!--</classPath>-->
+                            <!--<icon>src/main/resources/images/icon.ico</icon>-->
+                            <!--<jre>-->
+                                <!--<minVersion>1.8.0</minVersion>-->
+                                <!--<maxVersion></maxVersion>-->
+                                <!--<initialHeapSize>512</initialHeapSize>-->
+                                <!--<maxHeapSize>1024</maxHeapSize>-->
+                            <!--</jre>-->
+                            <!--<versionInfo>-->
+                                <!--<fileVersion>${project.version}</fileVersion>-->
+                                <!--<txtFileVersion>${project.version}</txtFileVersion>-->
+                                <!--<fileDescription>des</fileDescription>-->
+                                <!--<copyright>Copyright (c) 2018 </copyright>-->
+                                <!--<companyName>${app.vendor}</companyName>-->
+                                <!--<productVersion>${project.version}</productVersion>-->
+                                <!--<txtProductVersion>${project.version}</txtProductVersion>-->
+                                <!--<productName>${app.filename}</productName>-->
+                                <!--<internalName>${app.filename}</internalName>-->
+                                <!--<originalFilename>SM-DLM.exe</originalFilename>-->
+                            <!--</versionInfo>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>

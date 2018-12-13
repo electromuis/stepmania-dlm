@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +57,9 @@ public class MainController {
     public Label progressLabel;
 
     @FXML
+    public Label mainLabel;
+
+    @FXML
     TableView packsTable;
     ObservableList<Pack> packList = FXCollections.observableArrayList();
     ProviderLoading loader = new ProviderLoading();
@@ -70,6 +75,14 @@ public class MainController {
     private void initialize() {
         initTable();
         initPackDownloader();
+        findVersion();
+    }
+
+    private void findVersion() {
+        String v = settings.getVersion();
+        if (v != null) {
+            mainLabel.setText(mainLabel.getText() + " (v" + v + ")");
+        }
     }
 
     private void initPackDownloader() {
@@ -297,14 +310,6 @@ public class MainController {
 
                 if(n == JOptionPane.YES_OPTION) {
                     setWorking(true);
-
-                    for(int i = 0; i < packDownloaders.size(); i ++) {
-                        if(i < settings.getNumThreads()) {
-                            packDownloaders.get(i).start(this);
-                        } else {
-                            break;
-                        }
-                    }
                 }
             }).start();
         }
@@ -347,7 +352,7 @@ public class MainController {
             }
         }
 
-        if(numWorking > 0) {
+        if(!b && numWorking > 0) {
             return false;
         }
 

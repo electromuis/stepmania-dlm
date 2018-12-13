@@ -26,7 +26,7 @@
                   <Image url="@../images/icon.png" />
                </image>
             </ImageView>
-            <Label text="Stepmania dlm" />
+            <Label text="Stepmania DLM" fx:id="mainLabel" />
             <Button mnemonicParsing="false" onMouseClicked="#saveList" text="Save list" />
             <Button mnemonicParsing="false" onMouseClicked="#loadList" text="Load list" />
             <Button mnemonicParsing="false" onMouseClicked="#changeSongsDir" text="Change song folder" />

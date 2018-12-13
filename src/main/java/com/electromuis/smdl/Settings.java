@@ -64,6 +64,50 @@ public class Settings {
         }
     }
 
+    public String getVersion()
+    {
+        String path = "";
+        String OS = System.getProperty("os.name", "generic").toLowerCase();
+
+        if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+            path = System.getProperty("user.home")  + "/Library/Application Support/SM-DLM/";
+        } else if (OS.indexOf("win") >= 0) {
+            path = System.getProperty("user.home")  + "/AppData/Local/SM-DLM/";
+        } else {
+            path = System.getProperty("user.home") + "/.SM-DLM/";
+        }
+
+        File p = new File(path);
+        int n = 0;
+
+        for (File f : p.listFiles()) {
+            String jar = f.getName();
+            if (jar.startsWith("smdownloadmanager-")) {
+                try {
+                    String v = jar.split("-")[1].replace(".jar", "").replace(".", "");
+                    int n2 = Integer.parseInt(v);
+                    if (n2 > n) {
+                        n = n2;
+                    }
+                } catch (Exception e){}
+            }
+        }
+
+        if(n == 0) {
+            return null;
+        }
+
+        n = n / 100;
+
+        String v = Integer.toString(n);
+
+        if(v.length() != 2) {
+            return null;
+        }
+
+        return v.charAt(0) + "." + v.charAt(1);
+    }
+
     public int getNumThreads()
     {
         try {
@@ -193,6 +237,16 @@ public class Settings {
                 return;
             }
 
+            String lastUpdateString = config.get("main", "lastUpdate");
+            long lastUpdate = Long.parseLong(lastUpdateString);
+            long now = System.currentTimeMillis() / 1000;
+            long offset = 60 * 60 * 24 * 7;
+
+            if(lastUpdate + offset < now) {
+                System.out.println("Loading cache failed 2");
+                return;
+            }
+
             JSONArray array = new JSONArray(json);
 
             if (array.length() > 0) {
@@ -213,6 +267,7 @@ public class Settings {
                 controller.updateExistingPacks();
             }
         } catch (Exception e) {
+            System.out.println("Loading cache failed (3)");
             e.printStackTrace();
         }
     }
@@ -226,8 +281,11 @@ public class Settings {
 
         try {
             String data = compress(array.toString());
-
             config.put("main", "songCache", data);
+
+            long now = System.currentTimeMillis() / 1000;
+            config.put("main", "lastUpdate", now);
+
             config.store();
         } catch (IOException e) {
             e.printStackTrace();
