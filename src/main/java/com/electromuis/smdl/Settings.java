@@ -64,6 +64,24 @@ public class Settings {
         }
     }
 
+    public int getNumThreads()
+    {
+        try {
+            String val = config.get("main", "num_threads");
+            return Integer.parseInt(val);
+        } catch(NumberFormatException | NullPointerException e) {
+            config.put("main", "num_threads", 4);
+
+            try {
+                config.store();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+            return 4;
+        }
+    }
+
     public String getSongsFolder() {
         return config.get("main", "song_folder");
     }

@@ -116,11 +116,11 @@ public class PackRow {
             if (!success) {
                 setStatus(Status.FAILED);
                 System.out.println("Download failed");
-                JOptionPane.showMessageDialog(null, "There was an error downloading the pack", "Download error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "There was an error downloading: " + pack.getName(), "Download error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
             setStatus(Status.FAILED);
-            JOptionPane.showMessageDialog(null, "There was an error installing the pack", "Download error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "There was an error installing: " + pack.getName(), "Download error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }

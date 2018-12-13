@@ -296,9 +296,14 @@ public class MainController {
                         JOptionPane.YES_NO_OPTION);
 
                 if(n == JOptionPane.YES_OPTION) {
-                    for (PackRow pd : packDownloaders) {
-                        setWorking(true);
-                        pd.start(this);
+                    setWorking(true);
+
+                    for(int i = 0; i < packDownloaders.size(); i ++) {
+                        if(i < settings.getNumThreads()) {
+                            packDownloaders.get(i).start(this);
+                        } else {
+                            break;
+                        }
                     }
                 }
             }).start();
@@ -318,10 +323,32 @@ public class MainController {
     }
 
     public boolean setWorking(boolean b){
+        int numWorking = 0;
+        int numPending = 0;
+
         for (PackRow pd : packDownloaders) {
             if(pd.isWorking()) {
-                return false;
+                numWorking ++;
+            } else if(pd.getStatus() == PENDING) {
+                numPending ++;
             }
+        }
+
+        if(numPending > 0) {
+            for (PackRow pd : packDownloaders) {
+                if(numWorking >= settings.getNumThreads()) {
+                    break;
+                }
+
+                if(pd.getStatus() == PENDING) {
+                    pd.start(this);
+                    numWorking ++;
+                }
+            }
+        }
+
+        if(numWorking > 0) {
+            return false;
         }
 
         working = b;

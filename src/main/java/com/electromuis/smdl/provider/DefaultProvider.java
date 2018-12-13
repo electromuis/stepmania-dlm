@@ -62,8 +62,9 @@ public abstract class DefaultProvider implements PackProvider {
     @Override
     public boolean download(Pack p, PackRow pd) throws IOException, Extractor.ExtractionException {
         String archive = downloadFile(pd, getInputStream(p));
+        File file = new File(archive);
 
-        if (archive != null) {
+        if (archive != null && file.exists()) {
             pd.setStatus(PackRow.Status.EXTRACTING);
 
             String targetDir = MainController.getSettings().getSongsFolder() + File.separator + p.getName();

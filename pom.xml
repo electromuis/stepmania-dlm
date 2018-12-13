@@ -6,7 +6,7 @@
 
     <groupId>electromuis</groupId>
     <artifactId>smdownloadmanager</artifactId>
-    <version>3.0.0.0</version>
+    <version>3.1.0.0</version>
 
     <properties>
         <!-- Installer Filename without suffix -->
@@ -25,7 +25,7 @@
         <app.vendor>Electromuis</app.vendor>
 
         <!-- The Application version used by javapackager -->
-        <app.version>3.0</app.version>
+        <app.version>3.1</app.version>
 
         <!-- Base URL where you will host the application artifacts -->
         <app.url>http://dutchrhythm.com/dlm/</app.url>
@@ -75,49 +75,49 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
-                <!-- Generate app.xml manifest -->
-                <executions>
-                    <execution>
-                        <id>create-manifest</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>fxlauncher.CreateManifest</mainClass>
-                            <arguments>
-                                <argument>${app.url}</argument>
-                                <argument>${app.mainClass}</argument>
-                                <argument>${app.dir}</argument>
-                                <argument>--cache-dir=${app.cacheDir}</argument>
-                                <argument>--accept-downgrade=${app.acceptDowngrade}</argument>
-                                <argument>--include-extensions=jpg</argument>
-                                <argument>${app.parameters}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>embed-manifest-in-launcher</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>jar</executable>
-                            <workingDirectory>${app.dir}</workingDirectory>
-                            <arguments>
-                                <argument>uf</argument>
-                                <argument>fxlauncher.jar</argument>
-                                <argument>app.xml</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<artifactId>exec-maven-plugin</artifactId>-->
+                <!--<version>1.4.0</version>-->
+                <!--&lt;!&ndash; Generate app.xml manifest &ndash;&gt;-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>create-manifest</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>java</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<mainClass>fxlauncher.CreateManifest</mainClass>-->
+                            <!--<arguments>-->
+                                <!--<argument>${app.url}</argument>-->
+                                <!--<argument>${app.mainClass}</argument>-->
+                                <!--<argument>${app.dir}</argument>-->
+                                <!--<argument>&#45;&#45;cache-dir=${app.cacheDir}</argument>-->
+                                <!--<argument>&#45;&#45;accept-downgrade=${app.acceptDowngrade}</argument>-->
+                                <!--<argument>&#45;&#45;include-extensions=jpg</argument>-->
+                                <!--<argument>${app.parameters}</argument>-->
+                            <!--</arguments>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                    <!--<execution>-->
+                        <!--<id>embed-manifest-in-launcher</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>exec</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<executable>jar</executable>-->
+                            <!--<workingDirectory>${app.dir}</workingDirectory>-->
+                            <!--<arguments>-->
+                                <!--<argument>uf</argument>-->
+                                <!--<argument>fxlauncher.jar</argument>-->
+                                <!--<argument>app.xml</argument>-->
+                            <!--</arguments>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
